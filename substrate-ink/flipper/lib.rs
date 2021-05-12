@@ -36,6 +36,9 @@
 // To `brew update`, first run:
 //   git -C /opt/homebrew/Library/Taps/homebrew/homebrew-core fetch --unshallow
 
+// Equal to metamask? https://polkadot.js.org/extension/
+// $canvas --dev --tmp (dev locally)
+// No need to make UI with canvas? (https://paritytech.github.io/canvas-ui)
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
