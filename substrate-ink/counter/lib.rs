@@ -2,7 +2,10 @@
 
 use ink_lang as ink;
 
-
+// Start a project with $cargo contract <name>
+// Build a proejct with $cargo contract build and only target/ink/<name>.contract matters.
+// Run canvas node locally with $canvas --dev --tmp and visit https://paritytech.github.io/canvas-ui/#/
+// Upload your contract <name> and test its functions.
 
 #[ink::contract]
 mod counter {
@@ -51,15 +54,15 @@ mod counter {
             self.value = 0i64;
         }
 
-        #[ink(message)]
-        pub fn min(&mut self) {
-            self.value = i64::MIN;
-        }
+        // #[ink(message)]
+        // pub fn min(&mut self) {
+        //     self.value = i64::MIN;
+        // }
 
-        #[ink(message)]
-        pub fn max(&mut self) {
-            self.value = i64::MAX;
-        }
+        // #[ink(message)]
+        // pub fn max(&mut self) {
+        //     self.value = i64::MAX;
+        // }
 
         /// Simply returns the current value of our `i64`.
         #[ink(message)]
@@ -100,10 +103,10 @@ mod counter {
             assert_eq!(counter.get(), 10i64);
             counter.to_zero();
             assert_eq!(counter.get(), 0i64);
-            counter.max();
-            assert_eq!(counter.get(), i64::MAX);
-            counter.min();
-            assert_eq!(counter.get(), i64::MIN);
+            // counter.max();
+            // assert_eq!(counter.get(), i64::MAX);
+            // counter.min();
+            // assert_eq!(counter.get(), i64::MIN);
         }
     }
 }
