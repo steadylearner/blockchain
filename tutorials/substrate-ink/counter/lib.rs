@@ -3,6 +3,7 @@
 use ink_lang as ink;
 
 // Start a project with $cargo contract <name>
+// $cargo c to download packages to your project.
 // Build a proejct with $cargo contract build and only target/ink/<name>.contract matters.
 // Run canvas node locally with $canvas --dev --tmp and visit https://paritytech.github.io/canvas-ui/#/
 // Upload your contract <name> and test its functions.
