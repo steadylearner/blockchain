@@ -10,11 +10,10 @@ pragma solidity >=0.7.0 <0.9.0;
 // Write UI for this - Edit src/App.js 
 // $yarn start with metamask
 
-// How to listen to event? https://github.com/ethjs/ethjs/blob/master/docs/user-guide.md
-
 // Include self destrcut function to test contract.balance?
+// sudo state
 
-// sudo state function for testing?
+// Organize the project with frontend
 contract Escrow {
     uint public value;
     address payable public seller;

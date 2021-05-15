@@ -46,7 +46,8 @@ function App() {
 
     try {
       const value = await contract.value() // How to manually set this?
-      alert(value);
+      // alert(value);
+      alert(`${ethers.utils.formatEther(value)} ETH`);
 
       // console.log('state: ', state) // 0
     } catch (err) {
@@ -64,7 +65,7 @@ function App() {
     const contractBalance =  await provider.getBalance(contract.address);
     // setEscrowBalance(contractBalance);
 
-    alert(`Current contract balance is ${contractBalance}`);
+    alert(`Current contract balance is ${ethers.utils.formatEther(contractBalance)} ETH`);
     
     try {
       const state = await contract.state()
@@ -114,6 +115,10 @@ function App() {
 
       const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
 
+      contract.on("Aborted", () => {
+        alert("Aborted");
+      })
+
       const transaction = await contract.abort();
       await transaction.wait();
 
@@ -148,6 +153,13 @@ function App() {
       const signer = provider.getSigner(); // Your current metamask account;
 
       const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+      
+      contract.on("Aborted", () => {
+        alert("This shouldn't be called");
+      })
+      contract.on("PurchaseConfirmed", () => {
+        alert("PurchaseConfirmed");
+      })
 
       const transaction = await contract.confirmPurchase({ value: ethers.utils.parseEther("2.0") });
       // const transaction = await contract.confirmPurchase({ value: 2000000000000000 });
