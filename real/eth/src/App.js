@@ -1,68 +1,260 @@
+// https://github.com/ethjs/examples
+
 import './App.css';
 import { useState } from 'react';
 import { ethers } from 'ethers'
 
-import Greeter from './artifacts/contracts/Greeter.sol/Greeter.json'
-import Token from './artifacts/contracts/Token.sol/Token.json'
-
-// Deploying contracts with the account: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
-// Greeter deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
-// Token deployed to: 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+import Escrow from './artifacts/contracts/Escrow.sol/Escrow.json'
 
 // localhost
-const greeterAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3" 
+const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
-// robsten (https://ropsten.etherscan.io/address/0x341ad76727ea38a1d091081138cd4d68394993de)
-// const greeterAddress = "0x341ad76727EA38A1d091081138CD4D68394993dE" 
+// 1. Show contract state
+// 2. Show participants address
+// 3. Show participants balance for each action
 
+// Created, Locked, Release, Inactive
+// Use switch instead later?
+const humanReadableEscrowState = (state) => {
+  if (state === 0) {
+    return "Created";
+  } else if (state === 1) {
+    return "Locked";
+  } else if (state === 2) {
+    return "Release";
+  } else if (state === 3) {
+    return "Inactive";
+  }
+}
+
+// Should listen to abort event
 function App() {
-  const [greeting, setGreetingValue] = useState()
-  const [userAccount, setUserAccount] = useState()
-  const [amount, setAmount] = useState()
+  const [escrowState, setEscrowState] = useState();
+  // const [escrowBalance, setEscrowBalance] = useState();
+  const [contractAddress, setContractAddresss] = useState();
+  // const [currentSigner, setCurrentSigner] = useState();
 
   async function requestAccount() {
     await window.ethereum.request({ method: 'eth_requestAccounts' });
   }
 
-  async function fetchGreeting() {
-    if (typeof window.ethereum !== 'undefined') {
-      const provider = new ethers.providers.Web3Provider(window.ethereum)
-      console.log({ provider })
-      const contract = new ethers.Contract(greeterAddress, Greeter.abi, provider)
+  async function showCurrentEscrowValue() {
+    // 1. Get state
 
-      try {
-        const data = await contract.greet()
-        console.log('data: ', data)
-      } catch (err) {
-        console.log("Error: ", err)
-      }
-    }    
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider)
+
+    try {
+      const value = await contract.value() // How to manually set this?
+      alert(value);
+
+      // console.log('state: ', state) // 0
+    } catch (err) {
+      console.log("Error: ", err)
+    }
   }
 
-  async function setGreeting() {
-    if (!greeting) return
+  async function showCurrentEscrowState() {
+    // 1. Get state
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider)
+    setContractAddresss(contract.address);
+
+    const contractBalance =  await provider.getBalance(contract.address);
+    // setEscrowBalance(contractBalance);
+
+    alert(`Current contract balance is ${contractBalance}`);
+    
+    try {
+      const state = await contract.state()
+      setEscrowState(humanReadableEscrowState(state));
+      
+      // console.log('state: ', state) // 0
+    } catch (err) {
+      console.log("Error: ", err)
+    }
+  }
+
+  async function showSeller() {
+    // 1. Get state
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider)
+
+    try {
+      const seller = await contract.seller()
+      
+      console.log('seller'); 
+      console.log(seller);
+
+      console.log("seller balance");
+      const sellerBalance = await provider.getBalance(seller);
+      console.log(ethers.utils.formatEther(sellerBalance));
+      // seller
+      // 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+      // 9999.995745032
+    } catch (err) {
+      console.log("Error: ", err)
+    }
+  }
+
+  // I had nonce too high problem, it was solved by resetting transaciton history at metamask configruation
+  async function abort() {
+    if (!escrowState) return
+
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
 
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      console.log({ provider })
-      
-      const signer = provider.getSigner()
-      const contract = new ethers.Contract(greeterAddress, Greeter.abi, signer)
-      
-      const transaction = await contract.setGreeting(greeting)
-      await transaction.wait()
-      
-      fetchGreeting()
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      // console.log("signer");
+      // console.log(signer);
+
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+
+      const transaction = await contract.abort();
+      await transaction.wait();
+
+      // provider.on("Aborted", (event) => {
+      //   console.log("aborted event information");
+      //   console.log(event);
+      //   // Emitted on every block change
+      // })
+
+      // let eventFilter = contract.filters.ContractEvent()
+      // let events = await contract.queryFilter(eventFilter)
+      // console.log(events);
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  // Should use another account
+  async function purchase() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      provider.on("Aborted", (event) => {
+        console.log("abort event listener");
+        console.log(event);
+      })
+
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+
+      const transaction = await contract.confirmPurchase({ value: ethers.utils.parseEther("2.0") });
+      // const transaction = await contract.confirmPurchase({ value: 2000000000000000 });
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  // Only show this after purchase
+  async function showBuyer() {
+    // 1. Get state
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider)
+
+    try {
+      const buyer = await contract.buyer()
+
+      console.log('buyer');
+      console.log(buyer);
+
+      // Before purchase
+      // buyer
+      // 0x0000000000000000000000000000000000000000 (unset)?
+
+      // after
+      // buyer
+      // 0xdD2FD4581271e230360230F9337D5c0430Bf44C0
+
+      console.log("buyer balance");
+      const buyerBalance = await provider.getBalance(buyer);
+      console.log(ethers.utils.formatEther(buyerBalance));
+
+      // Should make this work and listen to the event
+    } catch (err) {
+      console.log("Error: ", err)
+    }
+  }
+
+  async function receive() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      provider.on("error", (tx) => {
+        // Emitted when any error occurs
+        console.log("tx");
+        console.log(tx);
+      });
+
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await contract.confirmReceived();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  async function refund() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await contract.refundSeller();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
     }
   }
 
   return (
     <div className="App">
       <header className="App-header">
-        <button onClick={fetchGreeting}>Fetch Greeting</button>
-        <input onChange={e => setGreetingValue(e.target.value)} placeholder="Set greeting" />
-        <button onClick={setGreeting}>Set Greeting</button>
+        <button onClick={showCurrentEscrowValue} >Show me the price(value) of the contract</button>
+        <button onClick={showCurrentEscrowState} >Show me the current state of the contract</button>
+        <h1>{escrowState} ({contractAddress})</h1>
+        <br />
+        <button onClick={showSeller}>Show seller at console</button>
+        <button onClick={abort}>Abort</button>
+        <button onClick={refund}>Refund</button>
+        <br />
+        {/* Only show this after purchase later */}
+        <button onClick={purchase}>Purchase</button>
+        <button onClick={showBuyer}>Show Buyer at console</button>
+        <button onClick={receive}>Receive</button>
+        
+        {/* <br />
+
+        <button onClick={confirmPurchase}>Confirm Purchase</button>
+        <button onClick={confirmReceived}>Confirm Received</button>
+
+        <br />
+        
+        <button onClick={refundSeller}>Refund Seller</button> */}
       </header>
     </div>
   );

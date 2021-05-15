@@ -43,6 +43,7 @@ function Main (props) {
 
 export default function NodeInfo (props) {
   const { api } = useSubstrate();
+  
   return api.rpc &&
     api.rpc.system &&
     api.rpc.system.chain &&

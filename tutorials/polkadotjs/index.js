@@ -1,5 +1,7 @@
 // Import
-const { ApiPromise, WsProvider } = require('@polkadot/api');
+const { ApiPromise, WsProvider, Keyring } = require('@polkadot/api');
+const { stringToU8a, u8aToHex } = require ('@polkadot/util');
+
 
 // Construct
 const websocketProvider = "wss://rpc.polkadot.io"; // Default ws://127.0.0.1:9944
@@ -76,6 +78,87 @@ const wsProvider = new WsProvider(websocketProvider);
     // const unsub = await api.derive.chain.subscribeNewHeads((lastHeader) => {
     //     console.log(`#${lastHeader.number} was authored by ${lastHeader.author}`);
     // });
+
+    // Sign and send a transfer from Alice to Bob
+    const txHash = await api.tx.balances
+        .transfer(BOB, 12345)
+        .signAndSend(alice);
+
+    // Show the hash
+    console.log(`Submitted with hash ${txHash}`);
+
+    // KEYRING
+
+    const keyring = new Keyring({ type: 'sr25519' });
+
+    const PHRASE = 'entire material egg meadow latin bargain dutch coral blood melt acoustic thought';
+
+    // Add an account, straight mnemonic
+    const newPair = keyring.addFromUri(PHRASE);
+
+    // (Advanced) add an account with a derivation path (hard & soft)
+    const newDeri = keyring.addFromUri(`${PHRASE}//hard-derived/soft-derived`);
+
+    // (Advanced, development-only) add with an implied dev seed and hard derivation
+    const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+
+    // Add our Alice dev account
+    const alice = keyring.addFromUri('//Alice', { name: 'Alice default' });
+
+    // Log some info
+    console.log(`${alice.meta.name}: has address ${alice.address} with publicKey [${alice.publicKey}]`);
+
+    // Convert message, sign and then verify
+    const message = stringToU8a('this is our message');
+    const signature = alice.sign(message);
+    const isValid = alice.verify(message, signature);
+
+    // Log info
+    console.log(`The signature ${u8aToHex(signature)}, is ${isValid ? '' : 'in'}valid`)
+
+    // Create alice (carry-over from the keyring section)
+    const alice = keyring.addFromUri('//Alice');
+
+    // Make a transfer from Alice to BOB, waiting for inclusion
+    const unsub = await api.tx.balances
+        .transfer(BOB, 12345)
+        .signAndSend(alice, (result) => {
+            console.log(`Current status is ${result.status}`);
+
+            if (result.status.isInBlock) {
+                console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+            } else if (result.status.isFinalized) {
+                console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+                unsub();
+            }
+        });
+
+    // PREVIEW TRANSACTION
+    
+    // construct a transaction
+    // const transfer = api.tx.balances.transfer(BOB, 12345);
+
+    // // retrieve the payment info
+    // const { partialFee, weight } = await transfer.paymentInfo(alice);
+
+    // console.log(`transaction will have a weight of ${weight}, with ${partialFee.toHuman()} weight fees`);
+
+    // // send the tx
+    // transfer.signAndSend(alice, ({ events = [], status }) => { ... });
+
+    // SUDO FOR TEST
+
+    // const sudoKey = await api.query.sudo.key();
+
+    // // Lookup from keyring (assuming we have added all, on --dev this would be `//Alice`)
+    // const sudoPair = keyring.getPair(sudoKey);
+
+    // // Send the actual sudo transaction
+    // const unsub = await api.tx.sudo
+    //     .sudo(
+    //         api.tx.balances.setBalance(ADDR, 12345, 678)
+    //     )
+    //     .signAndSend(sudoPair, (result) => { ... });
 
     // process.exit(0);
 })().catch(err => {
