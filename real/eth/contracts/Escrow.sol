@@ -21,7 +21,7 @@ contract Escrow {
 
     enum State { Created, Locked, Release, Inactive } // 0, 1, 2, 3?
     
-    // enum State { Created, Locked, Release, Closed, Complete } // 0, 1, 2, 3?
+    // enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
     // The state variable has a default value of the first member, `State.created`
     State public state;
 
@@ -66,6 +66,7 @@ contract Escrow {
     event PurchaseConfirmed();
     event ItemReceived();
     event SellerRefunded();
+    event End();
 
     /// Ensure that `msg.value` is an even number.
     /// Division will truncate if it is an odd number.
@@ -154,5 +155,22 @@ contract Escrow {
         state = State.Inactive;
 
         seller.transfer(3 * value); // Seller receive 3 x valeu here
+    }
+
+    function end() 
+        public
+        onlySeller
+        inState(State.Inactive)
+    {
+        emit End();
+
+        // state = State.End;
+        
+        // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
+
+        // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
+
+        // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
+        selfdestruct(seller);
     }
 }

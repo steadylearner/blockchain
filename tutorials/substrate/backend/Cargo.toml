@@ -1,6 +1,31 @@
 [profile.release]
 panic = 'unwind'
 
+# This doesn't work
+# /Users/steadylearner/.cargo/registry/src/github.com-1ecc6299db9ec823/wasmtime-runtime-0.22.0/src/traphandlers.rs:169:44
+# (*cx.uc_mcontext).__ss.__rip as *const u8
+# __rip issue 
+# cd and Use __pc instead
+
+# https://stackoverflow.com/questions/66987367/i-can-not-run-substrate-on-m1
+# https://github.com/substrate-developer-hub/substrate-node-template/issues/179
+
+# Remove cargo.lock, cargo clean
+# https://substrate.dev/docs/en/tutorials/create-your-first-substrate-chain/setup
+
+# This worked
+
+# } else if #[cfg(target_os = "macos")] {
+#     let cx = &*(cx as *const libc::ucontext_t);
+#     (*cx.uc_mcontext).__ss.__rip as *const u8
+# to
+
+# } else if #[cfg(target_os = "macos")] {
+#     let cx = &*(cx as *const libc::ucontext_t);
+#     (*cx.uc_mcontext).__ss.__pc as *const u8
+
+# https://substrate.dev/docs/en/tutorials/create-your-first-substrate-chain/background
+
 [workspace]
 members = [
     'node',

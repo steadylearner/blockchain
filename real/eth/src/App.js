@@ -154,9 +154,6 @@ function App() {
 
       const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
       
-      contract.on("Aborted", () => {
-        alert("This shouldn't be called");
-      })
       contract.on("PurchaseConfirmed", () => {
         alert("PurchaseConfirmed");
       })
@@ -243,16 +240,43 @@ function App() {
     }
   }
 
+  async function end() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      // Save this locally?
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      contract.on("End", () => {
+        alert("End"); // Contract is detroyed
+      })
+
+      const transaction = await contract.end();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
   return (
     <div className="App">
       <header className="App-header">
         <button onClick={showCurrentEscrowValue} >Show me the price(value) of the contract</button>
         <button onClick={showCurrentEscrowState} >Show me the current state of the contract</button>
         <h1>{escrowState} ({contractAddress})</h1>
+
         <br />
+        
         <button onClick={showSeller}>Show seller at console</button>
         <button onClick={abort}>Abort</button>
         <button onClick={refund}>Refund</button>
+        <button onClick={end}>End</button>
+        
         <br />
         {/* Only show this after purchase later */}
         <button onClick={purchase}>Purchase</button>

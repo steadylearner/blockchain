@@ -26,6 +26,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     "buyer()": FunctionFragment;
     "confirmPurchase()": FunctionFragment;
     "confirmReceived()": FunctionFragment;
+    "end()": FunctionFragment;
     "refundSeller()": FunctionFragment;
     "seller()": FunctionFragment;
     "state()": FunctionFragment;
@@ -42,6 +43,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     functionFragment: "confirmReceived",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "end", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "refundSeller",
     values?: undefined
@@ -60,6 +62,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     functionFragment: "confirmReceived",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "end", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "refundSeller",
     data: BytesLike
@@ -153,6 +156,14 @@ export class Escrow extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    end(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "end()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -202,6 +213,14 @@ export class Escrow extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  end(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "end()"(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   refundSeller(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -238,6 +257,10 @@ export class Escrow extends Contract {
     confirmReceived(overrides?: CallOverrides): Promise<void>;
 
     "confirmReceived()"(overrides?: CallOverrides): Promise<void>;
+
+    end(overrides?: CallOverrides): Promise<void>;
+
+    "end()"(overrides?: CallOverrides): Promise<void>;
 
     refundSeller(overrides?: CallOverrides): Promise<void>;
 
@@ -295,6 +318,14 @@ export class Escrow extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    end(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "end()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -342,6 +373,14 @@ export class Escrow extends Contract {
     ): Promise<PopulatedTransaction>;
 
     "confirmReceived()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    end(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "end()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
