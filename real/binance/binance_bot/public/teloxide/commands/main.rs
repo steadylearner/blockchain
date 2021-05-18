@@ -9,12 +9,9 @@ use std::{env, error::Error};
 use teloxide::prelude::*;
 use teloxide::utils::command::BotCommand;
 
-use binance::api::*;
-use binance::market::*;
-use binance::account::*;
 // /help
-// /username
-// /usernameandage
+// /username steadylearner
+// /usernameandage steadylearner 0
 #[derive(BotCommand)]
 #[command(rename = "lowercase", description = "These commands are supported:")]
 enum Command {
@@ -43,7 +40,6 @@ async fn responses_to_command(
     Ok(())
 }
 
-
 // cargo watch -x "run -- --release"
 // cargo watch -x check
 #[tokio::main]
@@ -58,21 +54,6 @@ async fn run() {
   log::info!("Starting the_bot...");
 
   let bot = Bot::from_env().auto_send();
-
-  // let binance_api = dotenv!("BINANCE_API");
-  // let binance_secret = dotenv!("BINANCE_SECRET");
-
-  // let market: Market = Binance::new(None, None);
-  // let account: Account = Binance::new(Some(binance_api.into()), Some(binance_secret.into()));
-
-  // match market.get_price("BTCUSDT") {
-  //     Ok(answer) => println!("{:#?}", answer),
-  //     Err(e) => println!("Error: {:#?}", e),
-  // }
-  // match account.get_account() {
-  //   Ok(information) => println!("{:#?}", information.balances),
-  //   Err(e) => println!("Error: {:#?}", e),
-  // }
 
   let bot_name: String = "biannce_bot".into();
 
