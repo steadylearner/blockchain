@@ -2,16 +2,18 @@
 // Include more commands.
 // Read more https://github.com/teloxide/teloxide, https://github.com/wisespace-io/binance-rs
 
-extern crate dotenv;
+// extern crate dotenv;
 
-#[macro_use]
-extern crate dotenv_codegen;
+// #[macro_use]
+// extern crate dotenv_codegen;
 
 use dotenv::dotenv;
 use std::{env, error::Error};
 
-use teloxide::prelude::*;
+use teloxide::{payloads::SendMessageSetters, prelude::*};
 use teloxide::utils::command::BotCommand;
+use teloxide::{utils::markdown::link};
+use teloxide::types::ParseMode::MarkdownV2;
 
 use binance::api::*;
 use binance::market::*;
@@ -22,6 +24,7 @@ fn to_uppercase(string: &str) -> String {
 }
 
 // /help
+// /register
 // /price BTC
 // /price BTC USDT
 // /price btc sudt
@@ -32,6 +35,8 @@ fn to_uppercase(string: &str) -> String {
 enum Command {
   #[command(description = "display this text.")]
   Help,
+  #[command(description = "show a Binance sign up page.")]
+  Register,
   #[command(description = "show a cryptcurrency price in USDT by default.")]
   Price(String),
 //   #[command(description = "handle a username and an age.", parse_with = "split")]
@@ -55,6 +60,13 @@ async fn responses_to_command(
 
     match command {
         Command::Help => cx.answer(Command::descriptions()).send().await?,
+        // Command::Register => cx.answer(format!("Don't have a Binance account yet, you can make it here. (https://accounts.binance.com/en/register?ref=SQ86TYC5)")).await?,
+        Command::Register => {
+            // ERROR teloxide::error_handlers > Error: ApiError { kind: Unknown("Bad Request: can't parse entities: Character '!' is reserved and must be escaped with the preceding '\\'"), status_code: 400 }
+            let reigster_link = link("https://accounts.binance.com/en/register?ref=SQ86TYC5", "Don't have a Binance account yet? You can register here\\.");
+            cx.answer(reigster_link).parse_mode(MarkdownV2).send().await?
+            // cx.answer(reigster_link).await?
+        },
         Command::Price(crpytocurrency) => {
             let mut iter = crpytocurrency.split_whitespace();
 
