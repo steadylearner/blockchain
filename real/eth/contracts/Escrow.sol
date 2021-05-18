@@ -19,6 +19,10 @@ contract Escrow {
     address payable public seller;
     address payable public buyer;
 
+    // Title,
+    // Description
+    // Image
+
     enum State { Created, Locked, Release, Inactive } // 0, 1, 2, 3?
     
     // enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?

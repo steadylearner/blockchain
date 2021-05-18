@@ -26,6 +26,8 @@ panic = 'unwind'
 
 # https://substrate.dev/docs/en/tutorials/create-your-first-substrate-chain/background
 
+# ./target/release/node-template --dev --tmp
+
 [workspace]
 members = [
     'node',

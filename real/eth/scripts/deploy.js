@@ -5,6 +5,15 @@
 // Runtime Environment's members available in the global scope.
 const hre = require("hardhat");
 
+// npx hardhat console--network localhost
+// All contracts have already been compiled, skipping compilation.
+// > const Box = await ethers.getContractFactory("Box")
+// undefined
+//   > const box = await Box.attach("0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0")
+// undefined
+//   > (await box.retrieve()).toString()
+// '42'
+
 async function main() {
   const [deployer] = await hre.ethers.getSigners(); // First of 20 from $npx hardhat node?
 

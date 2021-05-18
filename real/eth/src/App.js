@@ -1,4 +1,7 @@
+// https://dev.to/dabit3/the-complete-guide-to-full-stack-ethereum-development-3j13
 // https://github.com/ethjs/examples
+// https://docs.openzeppelin.com/learn/developing-smart-contracts
+
 
 import './App.css';
 import { useState } from 'react';
@@ -12,6 +15,11 @@ const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 // 1. Show contract state
 // 2. Show participants address
 // 3. Show participants balance for each action
+
+// (await box.retrieve()).toString()
+// Retrieve accounts from the local node
+// const accounts = await ethers.provider.listAccounts();
+// console.log(accounts);
 
 // Created, Locked, Release, Inactive
 // Use switch instead later?
