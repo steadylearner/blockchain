@@ -16,23 +16,16 @@ pragma solidity >=0.7.0 <0.9.0;
 // Organize the project with frontend
 contract Escrow {
     uint public value;
-
     address payable public seller;
     address payable public buyer;
 
-    int public total_buyers;
-    // increase it with restart button
+    // Title,
+    // Description
+    // Image
 
-    struct Item {
-        string name;
-        string image;
-        string description;
-        string link;
-    }
-
-    Item public item;
-
-    enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
+    enum State { Created, Locked, Release, Inactive } // 0, 1, 2, 3?
+    
+    // enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
     // The state variable has a default value of the first member, `State.created`
     State public state;
 
@@ -73,7 +66,7 @@ contract Escrow {
         _;
     }
 
-    event Closed();
+    event Aborted();
     event PurchaseConfirmed();
     event ItemReceived();
     event SellerRefunded();
@@ -83,29 +76,36 @@ contract Escrow {
     /// Division will truncate if it is an odd number.
     /// Check via multiplication that it wasn't an odd number.
     /// 1.
-    constructor(Item memory itemInformation) payable {
+    constructor() payable {
         // How to start with more value for the contract?
         // after you deploy contract, the account balance becomes from 10000 to 9999.9968
         seller = payable(msg.sender);
 
         value = msg.value / 2; // Is this automatically caluclated?
-
-        item = itemInformation;
-        
         require((2 * value) == msg.value, "Value has to be even.");
     }
+
+    // I want to test the current status of contract, so inlcude this
+    // Is there a better way for this? or to read something, you should use this?
+    // function currentState()
+    //     public
+    //     view
+    //     returns (State)
+    // {
+    //     return state;
+    // }
 
     /// Abort the purchase and reclaim the ether.
     /// Can only be called by the seller before
     /// the contract is locked.
     /// 2.
-    function close()
+    function abort()
         public
         onlySeller
         inState(State.Created)
     {
-        emit Closed(); // How to listen to this?
-        state = State.Closed;
+        emit Aborted(); // How to listen to this?
+        state = State.Inactive;
         // We use transfer here directly. It is
         // reentrancy-safe, because it is the
         // last call in this function and we
@@ -156,32 +156,25 @@ contract Escrow {
         // It is important to change the state first because
         // otherwise, the contracts called using `send` below
         // can call in again here.
-        state = State.Complete;
+        state = State.Inactive;
 
         seller.transfer(3 * value); // Seller receive 3 x valeu here
     }
 
-    // function resetItem() {
-
-    // }
-
-    // function restartContract() {
-
-    // }
-
     function end() 
         public
         onlySeller
-        // inState(State.Inactive)
+        inState(State.Inactive)
     {
-        if (state == State.Closed || state == State.Complete) {
-            emit End();
-            // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
-            // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
-            // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
-            selfdestruct(seller);
-        }
+        emit End();
 
+        // state = State.End;
+        
+        // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
 
+        // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
+
+        // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
+        selfdestruct(seller);
     }
 }

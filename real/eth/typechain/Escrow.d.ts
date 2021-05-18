@@ -22,19 +22,20 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface EscrowInterface extends ethers.utils.Interface {
   functions: {
-    "abort()": FunctionFragment;
     "buyer()": FunctionFragment;
+    "close()": FunctionFragment;
     "confirmPurchase()": FunctionFragment;
     "confirmReceived()": FunctionFragment;
     "end()": FunctionFragment;
+    "item()": FunctionFragment;
     "refundSeller()": FunctionFragment;
     "seller()": FunctionFragment;
     "state()": FunctionFragment;
     "value()": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "abort", values?: undefined): string;
   encodeFunctionData(functionFragment: "buyer", values?: undefined): string;
+  encodeFunctionData(functionFragment: "close", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "confirmPurchase",
     values?: undefined
@@ -44,6 +45,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "end", values?: undefined): string;
+  encodeFunctionData(functionFragment: "item", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "refundSeller",
     values?: undefined
@@ -52,8 +54,8 @@ interface EscrowInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "state", values?: undefined): string;
   encodeFunctionData(functionFragment: "value", values?: undefined): string;
 
-  decodeFunctionResult(functionFragment: "abort", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "buyer", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "close", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "confirmPurchase",
     data: BytesLike
@@ -63,6 +65,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "end", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "item", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "refundSeller",
     data: BytesLike
@@ -72,13 +75,15 @@ interface EscrowInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "value", data: BytesLike): Result;
 
   events: {
-    "Aborted()": EventFragment;
+    "Closed()": EventFragment;
+    "End()": EventFragment;
     "ItemReceived()": EventFragment;
     "PurchaseConfirmed()": EventFragment;
     "SellerRefunded()": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "Aborted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Closed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "End"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ItemReceived"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PurchaseConfirmed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SellerRefunded"): EventFragment;
@@ -128,17 +133,17 @@ export class Escrow extends Contract {
   interface: EscrowInterface;
 
   functions: {
-    abort(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    "abort()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     buyer(overrides?: CallOverrides): Promise<[string]>;
 
     "buyer()"(overrides?: CallOverrides): Promise<[string]>;
+
+    close(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "close()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     confirmPurchase(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -164,6 +169,26 @@ export class Escrow extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    item(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        name: string;
+        image: string;
+        description: string;
+      }
+    >;
+
+    "item()"(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        name: string;
+        image: string;
+        description: string;
+      }
+    >;
+
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -185,17 +210,17 @@ export class Escrow extends Contract {
     "value()"(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
-  abort(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  "abort()"(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   buyer(overrides?: CallOverrides): Promise<string>;
 
   "buyer()"(overrides?: CallOverrides): Promise<string>;
+
+  close(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "close()"(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   confirmPurchase(
     overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -221,6 +246,26 @@ export class Escrow extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  item(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string] & {
+      name: string;
+      image: string;
+      description: string;
+    }
+  >;
+
+  "item()"(
+    overrides?: CallOverrides
+  ): Promise<
+    [string, string, string] & {
+      name: string;
+      image: string;
+      description: string;
+    }
+  >;
+
   refundSeller(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -242,13 +287,13 @@ export class Escrow extends Contract {
   "value()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
-    abort(overrides?: CallOverrides): Promise<void>;
-
-    "abort()"(overrides?: CallOverrides): Promise<void>;
-
     buyer(overrides?: CallOverrides): Promise<string>;
 
     "buyer()"(overrides?: CallOverrides): Promise<string>;
+
+    close(overrides?: CallOverrides): Promise<void>;
+
+    "close()"(overrides?: CallOverrides): Promise<void>;
 
     confirmPurchase(overrides?: CallOverrides): Promise<void>;
 
@@ -261,6 +306,26 @@ export class Escrow extends Contract {
     end(overrides?: CallOverrides): Promise<void>;
 
     "end()"(overrides?: CallOverrides): Promise<void>;
+
+    item(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        name: string;
+        image: string;
+        description: string;
+      }
+    >;
+
+    "item()"(
+      overrides?: CallOverrides
+    ): Promise<
+      [string, string, string] & {
+        name: string;
+        image: string;
+        description: string;
+      }
+    >;
 
     refundSeller(overrides?: CallOverrides): Promise<void>;
 
@@ -280,7 +345,9 @@ export class Escrow extends Contract {
   };
 
   filters: {
-    Aborted(): TypedEventFilter<[], {}>;
+    Closed(): TypedEventFilter<[], {}>;
+
+    End(): TypedEventFilter<[], {}>;
 
     ItemReceived(): TypedEventFilter<[], {}>;
 
@@ -290,17 +357,17 @@ export class Escrow extends Contract {
   };
 
   estimateGas: {
-    abort(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    "abort()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     buyer(overrides?: CallOverrides): Promise<BigNumber>;
 
     "buyer()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    close(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "close()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     confirmPurchase(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -325,6 +392,10 @@ export class Escrow extends Contract {
     "end()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    item(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "item()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -348,17 +419,17 @@ export class Escrow extends Contract {
   };
 
   populateTransaction: {
-    abort(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "abort()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     buyer(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "buyer()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    close(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "close()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     confirmPurchase(
       overrides?: PayableOverrides & { from?: string | Promise<string> }
@@ -383,6 +454,10 @@ export class Escrow extends Contract {
     "end()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    item(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "item()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
