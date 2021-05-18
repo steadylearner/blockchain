@@ -106,11 +106,12 @@ async fn responses_to_command(
 
                 match market.get_price(target) {
                     Ok(symbol_price) => {
-                        println!("{:#?}", &symbol_price); // Use log instead?
-                        cx.answer(format!("The price you want is {:#?}.", &symbol_price.price)).await?
+                        println!("{:#?}", &symbol_price); // Use log instead? log::info!(&symbol_price);
+                        // cx.answer(format!("The price you want is {:#?}.", &symbol_price.price)).await?
+                        cx.answer(format!("The price you want is {:#?}. ", &symbol_price.price)).await?
                     },
                     Err(e) => {
-                        eprint!("{:#?}", e); // Use log instead? log::info!("Starting the_bot...");
+                        eprint!("{:#?}", e); // Use log instead? log::error!(e);
 
                         cx.answer(format!("Something went wrong. Did you use the correct cryptocurrency pair?")).await?
                     },
