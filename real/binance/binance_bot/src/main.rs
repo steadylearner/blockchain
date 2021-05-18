@@ -104,7 +104,7 @@ async fn responses_to_command(
             if let Some(first_crypto_symbol) = iter.next() {
 
                 let second_crypto_symbol = if let Some(second_crypto_symbol) = iter.next() {
-                    println!("There was second_crypto_symbol.");
+                    println!("There was a second_crypto_symbol.");
                     second_crypto_symbol
                 } else {
                     println!("There was no second_crypto_symbol. Use default.");
@@ -129,7 +129,7 @@ async fn responses_to_command(
                     },
                 }
             } else {
-                cx.answer("Cryptocurrency symbols were not specified. To start with, you can use /price ETH USD.").await?
+                cx.answer("Cryptocurrency symbols were not specified. To start with, you can use /price ETH or /price ETH USDT.").await?
                 // Without the code above, Teloxide shows this error internally.
                 // ERROR teloxide::error_handlers > Error: ApiError { kind: MessageTextIsEmpty, status_code: 400 }
             }
@@ -142,7 +142,6 @@ async fn responses_to_command(
 
     Ok(())
 }
-
 
 // cargo watch -x "run -- --release"
 // cargo watch -x check

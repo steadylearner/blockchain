@@ -12,6 +12,7 @@ import {
   Contract,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -25,6 +26,7 @@ interface TopInterface extends ethers.utils.Interface {
     "include(tuple)": FunctionFragment;
     "owner()": FunctionFragment;
     "remove(uint256)": FunctionFragment;
+    "setNewOwner(address)": FunctionFragment;
     "tops(uint256)": FunctionFragment;
     "totalTops()": FunctionFragment;
   };
@@ -46,6 +48,7 @@ interface TopInterface extends ethers.utils.Interface {
     functionFragment: "remove",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "setNewOwner", values: [string]): string;
   encodeFunctionData(functionFragment: "tops", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "totalTops", values?: undefined): string;
 
@@ -53,6 +56,10 @@ interface TopInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "include", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "remove", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setNewOwner",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "tops", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "totalTops", data: BytesLike): Result;
 
@@ -163,6 +170,16 @@ export class Top extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setNewOwner(
+      newowner: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "setNewOwner(address)"(
+      newowner: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     tops(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -248,6 +265,16 @@ export class Top extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setNewOwner(
+    newowner: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "setNewOwner(address)"(
+    newowner: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   tops(
     arg0: BigNumberish,
     overrides?: CallOverrides
@@ -330,6 +357,13 @@ export class Top extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    setNewOwner(newowner: string, overrides?: CallOverrides): Promise<void>;
+
+    "setNewOwner(address)"(
+      newowner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     tops(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -400,6 +434,16 @@ export class Top extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setNewOwner(
+      newowner: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "setNewOwner(address)"(
+      newowner: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     tops(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "tops(uint256)"(
@@ -449,6 +493,16 @@ export class Top extends Contract {
     "remove(uint256)"(
       index: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setNewOwner(
+      newowner: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "setNewOwner(address)"(
+      newowner: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     tops(

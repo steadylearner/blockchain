@@ -20,19 +20,20 @@ contract Escrow {
     address payable public seller;
     address payable public buyer;
 
-    int public total_buyers;
+    uint public total_successful_purchases;
+
     // increase it with restart button
 
     struct Item {
         string name;
         string image;
         string description;
-        string link;
+        string external_link;
     }
 
     Item public item;
 
-    enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
+    enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
     // The state variable has a default value of the first member, `State.created`
     State public state;
 
@@ -77,6 +78,7 @@ contract Escrow {
     event PurchaseConfirmed();
     event ItemReceived();
     event SellerRefunded();
+    event Resell();
     event End();
 
     /// Ensure that `msg.value` is an even number.
@@ -95,14 +97,14 @@ contract Escrow {
         require((2 * value) == msg.value, "Value has to be even.");
     }
 
-    /// Abort the purchase and reclaim the ether.
+    /// Close the purchase and reclaim the ether.
     /// Can only be called by the seller before
     /// the contract is locked.
     /// 2.
     function close()
         public
         onlySeller
-        inState(State.Created)
+        inState(State.Sale)
     {
         emit Closed(); // How to listen to this?
         state = State.Closed;
@@ -120,7 +122,7 @@ contract Escrow {
     function confirmPurchase()
         public
         notSeller
-        inState(State.Created)
+        inState(State.Sale)
         condition(msg.value == (2 * value))
         payable
     {
@@ -142,6 +144,8 @@ contract Escrow {
         // can call in again here.
         state = State.Release;
 
+        total_successful_purchases = total_successful_purchases + 1;
+
         buyer.transfer(value); // Buyer receive 1 x value here
     }
 
@@ -154,25 +158,29 @@ contract Escrow {
     {
         emit SellerRefunded();
         // It is important to change the state first because
-        // otherwise, the contracts called using `send` below
+        // oth.erwise, the contracts called using `send` below
         // can call in again here.
         state = State.Complete;
 
-        seller.transfer(3 * value); // Seller receive 3 x valeu here
+        seller.transfer(3 * value); // Seller receive 3 x value here
     }
 
-    // function resetItem() {
+    function restartContract() 
+        public
+        onlySeller
+        inState(State.Complete)
+        payable
+    {
+        require((2 * value) == msg.value, "Value has to be equal to what started the contract.");
 
-    // }
+        emit SellerRefunded();
 
-    // function restartContract() {
-
-    // }
+        state = State.Sale;
+    }
 
     function end() 
         public
         onlySeller
-        // inState(State.Inactive)
     {
         if (state == State.Closed || state == State.Complete) {
             emit End();
@@ -181,7 +189,5 @@ contract Escrow {
             // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
             selfdestruct(seller);
         }
-
-
     }
 }
