@@ -4,12 +4,14 @@
 import React from "react";
 
 const ContractDetails = ({
+    sales,
     balance,
     price,
     state,
 }) => {
     return (
         <div>
+            <p>Total sale: {sales}</p>
             <p>The current state of this escrow contract is <b>{state}</b></p>
             <p>The current balance of this escrow contract is {balance} ETH</p>
 

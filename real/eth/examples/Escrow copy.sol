@@ -33,7 +33,7 @@ contract Escrow {
 
     Item public item;
 
-    enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
+    enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3, 4, 5?
     // The state variable has a default value of the first member, `State.created`
     State public state;
 

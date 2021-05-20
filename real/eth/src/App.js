@@ -52,13 +52,17 @@ async function requestAccount() {
 
 const humanReadableEscrowState = (state) => {
   if (state === 0) {
-    return "Created";
+    return "Sale";
   } else if (state === 1) {
     return "Locked";
   } else if (state === 2) {
     return "Release";
   } else if (state === 3) {
-    return "Inactive";
+    return "Close";
+  } else if (state === 4) {
+    return "Complete";
+  } else if (state === 5) {
+    return "End";
   }
 }
 
@@ -72,9 +76,10 @@ function App() {
   // Include to context?
   const [escrowBalance, setEscrowBalance] = useState();
   const [escrowState, setEscrowState] = useState();
+  const [escrowSales, setEscrowSales] = useState();
   // const [contractState, setContractState] = useState();
 
-  const [value, setValue] = useState();
+  const [price, setPrice] = useState();
   // const [balance, setBalance] = useState();
   // Should find how to get contract balance also.
 
@@ -84,23 +89,28 @@ function App() {
   const [buyerBalance, setBuyerBalance] = useState();
 
   const [user, setUser] = useState();
-  const [userBalance, setUserBalance] = useState();
+  const [userBalance, setUserBalance] = useState(); 
 
   useEffect(() => {
     async function fetchData() {
 
       try {
+        
+
         const contractBalance = await provider.getBalance(contract.address);
         setEscrowBalance(ethers.utils.formatEther(contractBalance));
         // const contractBalance = await contract.balance()
         // setBalance(ethers.utils.formatEther(contractBalance));
 
+        const contractSales = await contract.sales();
+        setEscrowSales(contractSales);
+
         const state = await contract.state()
         setEscrowState(humanReadableEscrowState(state));
 
         // Should find how to get contract balance also.
-        const contractValue = await contract.value()
-        setValue(ethers.utils.formatEther(contractValue));
+        const contractPrice = await contract.price()
+        setPrice(ethers.utils.formatEther(contractPrice));
 
         const contractSeller = await contract.seller();
         setSeller(contractSeller);
@@ -120,7 +130,7 @@ function App() {
 
         // setUser(await signer.getAddress());
         const contractUser = await signer.getAddress();
-        setUser(contractUser);
+        // setUser(contractUser[0]); // Should make this part work again.
 
         const contractUserBalance = await provider.getBalance(contractUser);
         setUserBalance(ethers.utils.formatEther(contractUserBalance));
@@ -218,8 +228,9 @@ function App() {
   if (user === seller) {
     return (<div>
       <ContractDetails 
+        sales={escrowSales}
         state={escrowState}
-        price={value}
+        price={price}
         balance={escrowBalance}
       />
 
@@ -241,8 +252,9 @@ function App() {
   if (user === buyer) {
     return (<div>
       <ContractDetails
+        sales={escrowSales}
         state={escrowState}
-        price={value}
+        price={price}
         balance={escrowBalance}
       />
 
@@ -262,8 +274,9 @@ function App() {
   // Visitor.js
   return (<div>
     <ContractDetails
+      sales={escrowSales}
       state={escrowState}
-      price={value}
+      price={price}
       balance={escrowBalance}
     />
 

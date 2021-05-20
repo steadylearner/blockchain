@@ -152,29 +152,25 @@ contract Escrow {
         onlySeller
         inState(State.Release)
     {
-        emit SellerRefunded();
         // It is important to change the state first because
         // otherwise, the contracts called using `send` below
         // can call in again here.
         state = State.Inactive;
 
         seller.transfer(3 * value); // Seller receive 3 x valeu here
+        emit SellerRefunded();
     }
 
     function end() 
         public
         onlySeller
-        inState(State.Inactive)
     {
-        emit End();
-
-        // state = State.End;
-        
-        // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
-
-        // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
-
-        // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
-        selfdestruct(seller);
+        if (state == State.Closed || state == State.Complete) {
+            // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
+            // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
+            // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
+            selfdestruct(seller);
+            emit End();
+        }
     }
 }
