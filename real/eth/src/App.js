@@ -11,6 +11,9 @@
 // 5. Buyer can restart the contract with new information?
 // all again until buyer end the contract
 
+// 1. Include event listner to refresh the page.
+// 2. Find how to configure item?
+
 import { useEffect, useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -47,7 +50,15 @@ const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
 
 // Show metamask for users to decide if they will pay or not
 async function requestAccount() {
-  await window.ethereum.request({ method: 'eth_requestAccounts' });
+  try {
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+  } catch(error) {
+    console.log("error");
+    console.error(error);
+
+    alert("Login to Metamask first");
+  }
+  
 }
 
 const humanReadableEscrowState = (state) => {
@@ -61,9 +72,10 @@ const humanReadableEscrowState = (state) => {
     return "Close";
   } else if (state === 4) {
     return "Complete";
-  } else if (state === 5) {
-    return "End";
-  }
+  } 
+  // else if (state === 5) {
+  //   return "End";
+  // }
 }
 
 // Should listen to abort event
@@ -95,15 +107,13 @@ function App() {
     async function fetchData() {
 
       try {
-        
-
         const contractBalance = await provider.getBalance(contract.address);
         setEscrowBalance(ethers.utils.formatEther(contractBalance));
         // const contractBalance = await contract.balance()
         // setBalance(ethers.utils.formatEther(contractBalance));
 
         const contractSales = await contract.sales();
-        setEscrowSales(contractSales);
+        setEscrowSales(contractSales.toString());
 
         const state = await contract.state()
         setEscrowState(humanReadableEscrowState(state));
@@ -130,7 +140,9 @@ function App() {
 
         // setUser(await signer.getAddress());
         const contractUser = await signer.getAddress();
-        // setUser(contractUser[0]); // Should make this part work again.
+        // alert("contractUser");
+        // alert(contractUser);
+        setUser(contractUser); // Should make this part work again.
 
         const contractUserBalance = await provider.getBalance(contractUser);
         setUserBalance(ethers.utils.formatEther(contractUserBalance));
@@ -144,8 +156,8 @@ function App() {
     fetchData();
   }, []);
 
-  async function abort() {
-    if (!escrowState || escrowState !== "Created") {
+  async function close() {
+    if (!escrowState || escrowState !== "Sale") {
       return;
     }
 
@@ -157,20 +169,20 @@ function App() {
       // console.log("signer");
       // console.log(signer);
 
-      const forAbort = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+      const forClose = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
 
       // contract.on("Aborted", () => {
       //   alert("Aborted");
       // })
 
-      const transaction = await forAbort.abort();
+      const transaction = await forClose.close();
       await transaction.wait();
     }
   }
 
   // Visitor
   async function purchase() {
-    if (!escrowState || escrowState !== "Created") {
+    if (!escrowState || escrowState !== "Sale") {
       return;
     }
 
@@ -212,15 +224,68 @@ function App() {
     }
   }
 
+  async function refund() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const forRefund = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forRefund.refundSeller();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  async function restart() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const forRestart = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forRestart.restartContract({ value: ethers.utils.parseEther("2.0") });
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  async function end() {
+    if (!escrowState) return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const forEnd = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forEnd.end();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  // alert(escrowState);
+
   // const classes = useStyles();
 
   // user === null? no metamask?
-  if (!user) {
-    // return null;
-    return <p>
-      Include any signer such as Metamask.
-    </p>;
-  }
+  // if (!user) {
+  //   // return null;
+  //   return <p>
+  //     Include any signer such as Metamask.
+  //   </p>;
+  // }
 
   // Include role?
 
@@ -242,7 +307,11 @@ function App() {
 
         state={escrowState}
 
-        abort={abort}
+        close={close}
+        refund={refund}
+        
+        restart={restart}
+        end={end}
       />
 
     </div>);
@@ -284,7 +353,7 @@ function App() {
 
    <Visitor 
       address={seller}
-      // balance={buyerBalance}
+      balance={userBalance}
 
       state={escrowState}
 

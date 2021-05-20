@@ -1,3 +1,5 @@
+// Include event listner at frontend
+
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 
@@ -21,7 +23,7 @@ contract Escrow {
 
     // Include openzepplin library for this to increase?
     // total_successful_purchases
-    uint public sales; 
+    uint public sales = 0; 
 
     // Include item here later to describe the product?
     // Optionally include function to update it?
@@ -38,7 +40,8 @@ contract Escrow {
     // Description
     // Image
 
-    enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3, 4, 5?
+    enum State { Sale, Locked, Release, Closed, Complete } // 0, 1, 2, 3, 4?
+    // enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3, 4, 5?
     
     // enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
     // The state variable has a default value of the first member, `State.created`
@@ -87,7 +90,7 @@ contract Escrow {
     event SellerRefunded();
     event Resell();
     event Restarted();
-    event End();
+    // event End();
 
     /// Ensure that `msg.value` is an even number.
     /// Division will truncate if it is an odd number.
@@ -98,7 +101,9 @@ contract Escrow {
         // after you deploy contract, the account balance becomes from 10000 to 9999.9968
         seller = payable(msg.sender);
 
+        
         price = msg.value / 2; // Is this automatically caluclated?
+        
         require((2 * price) == msg.value, "Value has to be even.");
     }
 
@@ -180,20 +185,19 @@ contract Escrow {
         emit SellerRefunded();
     }
 
+    // Should test it work
     function restartContract() 
         public
         onlySeller
-        inState(State.Complete)
+        // inState(State.Complete)
         payable
     {
-        // How to send?
-        // Should I control it at frontend?
-        // msg.value is the amount of wei that the msg.sender sent with this transaction. 
-        // If the transaction doesn't fail, then the contract now has this ETH.
-        require((2 * price) == msg.value, "Value has to be equal to what started the contract.");
+        if (state == State.Closed || state == State.Complete) {
+            require((2 * price) == msg.value, "Value has to be equal to what started the contract.");
 
-        state = State.Sale;
-        emit Restarted();
+            state = State.Sale;
+            emit Restarted();
+        }
     }
 
     function end() 
@@ -201,11 +205,12 @@ contract Escrow {
         onlySeller
     {
          if (state == State.Closed || state == State.Complete) {
-            emit End();
+            // state = State.End;
+            selfdestruct(seller);
             // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
             // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
             // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
-            selfdestruct(seller);
+            // emit End(); // Will this work?
         }
     }
 }

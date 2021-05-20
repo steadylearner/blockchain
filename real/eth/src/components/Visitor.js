@@ -10,15 +10,22 @@ const Visitor = ({
     purchase,
 }) => {
     return (
-        <div>
-            <p>You are the visitor.</p>
+        <div style={{
+            maxWidth: "22.5rem",
+            
+            border: "1px solid black",
+            borderRadius: "0.5rem",
+            padding: "0 1rem 1rem 1rem",
+        }} >
+            {/* <p>You are the visitor.</p> */}
+            <h1>Visitor</h1>
 
             <p>Your addres is {address}</p>
-            {/* <p>Your balance is {balance} ETH</p> */}
+            <p>Your balance is {balance} ETH</p>
 
-            <br />
+            {/* <br /> */}
 
-            {state === "Created" && <Button onClick={purchase} variant="contained">Buy</Button>}
+            {state === "Sale" && <Button onClick={purchase} color="primary" variant="contained">I want to buy this</Button>}
         </div>
     );
 }
