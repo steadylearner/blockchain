@@ -11,8 +11,10 @@
 // 5. Buyer can restart the contract with new information?
 // all again until buyer end the contract
 
-// 1. Include event listner to refresh the page.
-// 2. Find how to configure item?
+// 1. Include event listener to refresh the page.
+// 2. Include tests for Solidity
+
+// 3. Find how to configure item?
 
 import { useEffect, useState } from 'react';
 
