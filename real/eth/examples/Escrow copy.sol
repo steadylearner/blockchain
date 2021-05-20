@@ -15,17 +15,25 @@ pragma solidity >=0.7.0 <0.9.0;
 
 // Organize the project with frontend
 contract Escrow {
-    uint public value;
+    uint public price;
+
     address payable public seller;
     address payable public buyer;
 
-    // Title,
-    // Description
-    // Image
+    // increase it with confirmReceived
+    // uint public total_successful_purchases;
 
-    enum State { Created, Locked, Release, Inactive } // 0, 1, 2, 3?
-    
-    // enum State { Created, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
+    // Include a function to update this?
+    struct Item {
+        string name;
+        string image;
+        string description;
+        string external_link;
+    }
+
+    Item public item;
+
+    enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3?
     // The state variable has a default value of the first member, `State.created`
     State public state;
 
@@ -66,51 +74,47 @@ contract Escrow {
         _;
     }
 
-    event Aborted();
+    event Closed();
     event PurchaseConfirmed();
     event ItemReceived();
     event SellerRefunded();
+    event Resell();
+    event Restarted();
     event End();
 
     /// Ensure that `msg.value` is an even number.
     /// Division will truncate if it is an odd number.
     /// Check via multiplication that it wasn't an odd number.
     /// 1.
-    constructor() payable {
+    constructor(Item memory itemInformation) payable {
         // How to start with more value for the contract?
         // after you deploy contract, the account balance becomes from 10000 to 9999.9968
         seller = payable(msg.sender);
 
-        value = msg.value / 2; // Is this automatically caluclated?
-        require((2 * value) == msg.value, "Value has to be even.");
+        price = msg.value / 2; // Is this automatically caluclated?
+
+        item = itemInformation;
+        
+        require((2 * price) == msg.value, "Value has to be even.");
     }
 
-    // I want to test the current status of contract, so inlcude this
-    // Is there a better way for this? or to read something, you should use this?
-    // function currentState()
-    //     public
-    //     view
-    //     returns (State)
-    // {
-    //     return state;
-    // }
-
-    /// Abort the purchase and reclaim the ether.
+    /// Close the purchase and reclaim the ether.
     /// Can only be called by the seller before
     /// the contract is locked.
     /// 2.
-    function abort()
+    function close()
         public
         onlySeller
-        inState(State.Created)
+        inState(State.Sale)
     {
-        emit Aborted(); // How to listen to this?
-        state = State.Inactive;
+        state = State.Closed;
         // We use transfer here directly. It is
         // reentrancy-safe, because it is the
         // last call in this function and we
         // already changed the state.
         seller.transfer(address(this).balance); // Should manually check the change at metamask?
+ 
+        emit Closed(); // How to listen to this?
     }
 
     // /// Confirm the purchase as buyer.
@@ -120,13 +124,14 @@ contract Escrow {
     function confirmPurchase()
         public
         notSeller
-        inState(State.Created)
-        condition(msg.value == (2 * value))
+        inState(State.Sale)
+        condition(msg.value == (2 * price))
         payable
     {
-        emit PurchaseConfirmed();
         buyer = payable(msg.sender);
         state = State.Locked;
+ 
+        emit PurchaseConfirmed();
     }
 
     // /// Confirm that you (the buyer) received the item.
@@ -136,13 +141,16 @@ contract Escrow {
         onlyBuyer
         inState(State.Locked)
     {
-        emit ItemReceived();
         // It is important to change the state first because
         // otherwise, the contracts called using `send` below
         // can call in again here.
         state = State.Release;
 
-        buyer.transfer(value); // Buyer receive 1 x value here
+        // total_successful_purchases = total_successful_purchases + 1;
+
+        buyer.transfer(price); // Buyer receive 1 x price here
+ 
+        emit ItemReceived();
     }
 
     /// This function refunds the seller, i.e.
@@ -152,29 +160,43 @@ contract Escrow {
         onlySeller
         inState(State.Release)
     {
-        emit SellerRefunded();
         // It is important to change the state first because
-        // otherwise, the contracts called using `send` below
+        // oth.erwise, the contracts called using `send` below
         // can call in again here.
-        state = State.Inactive;
+        state = State.Complete;
 
-        seller.transfer(3 * value); // Seller receive 3 x valeu here
+        seller.transfer(3 * price); // Seller receive 3 x price here
+        
+        emit SellerRefunded();
+    }
+
+    function restartContract() 
+        public
+        onlySeller
+        inState(State.Complete)
+        payable
+    {
+        // How to send?
+        // Should I control it at frontend?
+        // msg.value is the amount of wei that the msg.sender sent with this transaction. 
+        // If the transaction doesn't fail, then the contract now has this ETH.
+        require((2 * price) == msg.value, "Value has to be equal to what started the contract.");
+
+        state = State.Sale;
+
+        emit Restarted();
     }
 
     function end() 
         public
         onlySeller
-        inState(State.Inactive)
     {
-        emit End();
-
-        // state = State.End;
-        
-        // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
-
-        // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
-
-        // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
-        selfdestruct(seller);
+        if (state == State.Closed || state == State.Complete) {
+            emit End();
+            // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
+            // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
+            // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
+            selfdestruct(seller);
+        }
     }
 }
