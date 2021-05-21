@@ -33,8 +33,10 @@ module.exports = {
   },
   networks: {
     // $npx hardhat run scripts/deploy.js --network localhost
+    // https://hardhat.org/config/
     hardhat: {
-      chainId: 1337,
+      // chainId: 31337, // Use this for test?, this doens't solve the balance 0 problem for accoutns.
+      chainId: 1337, // Use this for frontend with metamaks?
     },
     // $npx hardhat run scripts/deploy.js --network ropsten
     ropsten: {

@@ -12,9 +12,6 @@ pragma solidity >=0.7.0 <0.9.0;
 // Write UI for this - Edit src/App.js 
 // $yarn start with metamask
 
-// Include self destrcut function to test contract.balance?
-// sudo state
-
 // Organize the project with frontend
 contract Escrow {
     uint public price;
@@ -23,7 +20,7 @@ contract Escrow {
 
     // Include openzepplin library for this to increase?
     // total_successful_purchases
-    uint public sales = 0; 
+    uint public total_sales = 0; 
 
     // Include item here later to describe the product?
     // Optionally include function to update it?
@@ -101,7 +98,6 @@ contract Escrow {
         // after you deploy contract, the account balance becomes from 10000 to 9999.9968
         seller = payable(msg.sender);
 
-        
         price = msg.value / 2; // Is this automatically caluclated?
         
         require((2 * price) == msg.value, "Value has to be even.");
@@ -181,7 +177,7 @@ contract Escrow {
         
         seller.transfer(3 * price); // Seller receive 3 x value here
 
-        sales = sales + 1; // Include openzepplin library for this to increase?
+        total_sales = total_sales + 1; // Include openzepplin library for this to increase?
         emit SellerRefunded();
     }
 
