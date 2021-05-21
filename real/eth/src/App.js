@@ -2,8 +2,6 @@
 // https://github.com/ethjs/examples
 // https://docs.openzeppelin.com/learn/developing-smart-contracts
 
-// Should make UI for visitor, seller and buyer
-
 // 1. Make escrow with custom price and item information
 // 2. Separate UI for seller and visitor (No buyer at the moment), seller can 
 // 3. When user buy the product, separate UI for seller and buyer, increase total buyers
@@ -11,157 +9,121 @@
 // 5. Buyer can restart the contract with new information?
 // all again until buyer end the contract
 
-// 1. Include event listener to refresh the page.
-// 2. Include tests for Solidity
+// Update frontend and include event
 
-// 3. Find how to configure item?
-
+// import './App.css';
 import { useEffect, useState } from 'react';
-
-import { makeStyles } from '@material-ui/core/styles';
-
-// import Avatar from '@material-ui/core/Avatar'; // Seller or Buyer should use this
-// import AccountCircle from '@material-ui/icons/AccountCircle'; // Visitor should use this
-
-// import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
-
 import { ethers } from 'ethers'
+
 import Escrow from './artifacts/contracts/Escrow.sol/Escrow.json'
-
-import ContractDetails from "./components/ContractDetails";
-
-import Seller from "./components/Seller";
-
-import Visitor from "./components/Visitor";
-import Buyer from "./components/Buyer";
 
 // localhost
 const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      margin: theme.spacing(1),
-    },
-  },
-}));
+// (await box.retrieve()).toString()
+// Retrieve accounts from the local node
+// const accounts = await ethers.provider.listAccounts();
+// console.log(accounts);
 
-// Include to context?
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
-
-// Show metamask for users to decide if they will pay or not
-async function requestAccount() {
-  try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-  } catch(error) {
-    console.log("error");
-    console.error(error);
-
-    alert("Login to Metamask first");
-  }
-  
-}
-
+// Created, Locked, Release, Inactive
+// Use switch instead later?
 const humanReadableEscrowState = (state) => {
   if (state === 0) {
-    return "Sale";
+    return "Created";
   } else if (state === 1) {
     return "Locked";
   } else if (state === 2) {
     return "Release";
   } else if (state === 3) {
-    return "Close";
-  } else if (state === 4) {
-    return "Complete";
-  } 
-  // else if (state === 5) {
-  //   return "End";
-  // }
+    return "Inactive";
+  }
 }
 
 // Should listen to abort event
 function App() {
-  // Include this.
-  // const contractBalance = await provider.getBalance(contract.address);
-  // setEscrowBalance(contractBalance);
-  // alert(`Current contract balance is ${ethers.utils.formatEther(contractBalance)} ETH`);
-
-  // Include to context?
-  const [escrowBalance, setEscrowBalance] = useState();
-  const [escrowState, setEscrowState] = useState();
-  const [escrowSales, setEscrowSales] = useState();
-  // const [contractState, setContractState] = useState();
-
-  const [price, setPrice] = useState();
-  // const [balance, setBalance] = useState();
-  // Should find how to get contract balance also.
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
 
   const [seller, setSeller] = useState();
   const [sellerBalance, setSellerBalance] = useState();
+
   const [buyer, setBuyer] = useState();
   const [buyerBalance, setBuyerBalance] = useState();
 
-  const [user, setUser] = useState();
-  const [userBalance, setUserBalance] = useState(); 
+  const [escrowState, setEscrowState] = useState();
+  // const [escrowBalance, setEscrowBalance] = useState();
+  // const [contractAddress, setContractAddresss] = useState();
+  // const [currentSigner, setCurrentSigner] = useState();
 
+  
   useEffect(() => {
     async function fetchData() {
+      // You can await here
+      const contractSeller = await contract.seller()
+      setSeller(contractSeller);
 
-      try {
-        const contractBalance = await provider.getBalance(contract.address);
-        setEscrowBalance(ethers.utils.formatEther(contractBalance));
-        // const contractBalance = await contract.balance()
-        // setBalance(ethers.utils.formatEther(contractBalance));
-
-        const contractSales = await contract.sales();
-        setEscrowSales(contractSales.toString());
-
-        const state = await contract.state()
-        setEscrowState(humanReadableEscrowState(state));
-
-        // Should find how to get contract balance also.
-        const contractPrice = await contract.price()
-        setPrice(ethers.utils.formatEther(contractPrice));
-
-        const contractSeller = await contract.seller();
-        setSeller(contractSeller);
-
-        const contractSellerBalance = await provider.getBalance(contractSeller);
-        setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
-
-        const contractBuyer = await contract.buyer()
-        setBuyer(contractBuyer);
-
-        const contractBuyerBalance = await provider.getBalance(contractBuyer);
-        setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance));
-
-        // https://docs.ethers.io/v5/single-page/#/v5/getting-started/-%23-getting-started--history
-        const signer = provider.getSigner(); // user
-        // console.log(signer);
-
-        // setUser(await signer.getAddress());
-        const contractUser = await signer.getAddress();
-        // alert("contractUser");
-        // alert(contractUser);
-        setUser(contractUser); // Should make this part work again.
-
-        const contractUserBalance = await provider.getBalance(contractUser);
-        setUserBalance(ethers.utils.formatEther(contractUserBalance));
-
-      } catch (error) {
-        console.log("error");
-        console.error(error);
-      }
+      const contractSellerBalance = await provider.getBalance(contractSeller);
+      setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
     }
 
     fetchData();
   }, []);
 
-  async function close() {
-    if (!escrowState || escrowState !== "Sale") {
-      return;
+  async function requestAccount() {
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+  }
+
+  async function showCurrentEscrowValue() {
+    // 1. Get state
+
+    try {
+      const value = await contract.value() // How to manually set this?
+      // alert(value);
+      alert(`${ethers.utils.formatEther(value)} ETH`);
+
+      // console.log('state: ', state) // 0
+    } catch (err) {
+      console.log("Error: ", err)
     }
+  }
+
+  async function showCurrentEscrowState() {
+    // 1. Get state
+
+    // setContractAddresss(contract.address);
+
+    const contractBalance = await provider.getBalance(contract.address);
+    // setEscrowBalance(contractBalance);
+
+    alert(`Current contract balance is ${ethers.utils.formatEther(contractBalance)} ETH`);
+
+    try {
+      const state = await contract.state()
+      setEscrowState(humanReadableEscrowState(state));
+
+      // console.log('state: ', state) // 0
+    } catch (err) {
+      console.log("Error: ", err)
+    }
+  }
+
+  async function showSeller() {
+
+    try {
+      console.log('seller');
+      console.log(seller);
+
+      console.log("seller balance");
+      console.log(sellerBalance);
+      // 9999.995745032
+    } catch (err) {
+      console.log("Error: ", err)
+    }
+  }
+
+  // // I had nonce too high problem, it was solved by resetting transaciton history at metamask configruation
+  async function abort() {
+    if (!escrowState) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -171,53 +133,66 @@ function App() {
       // console.log("signer");
       // console.log(signer);
 
-      const forClose = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
 
-      // contract.on("Aborted", () => {
-      //   alert("Aborted");
-      // })
+      contract.on("Aborted", () => {
+        alert("Aborted");
+      })
 
-      const transaction = await forClose.close();
+      const transaction = await contract.abort();
       await transaction.wait();
     }
   }
 
-  // Visitor
+  // // Should use another account
+  // This is not working currently
   async function purchase() {
-    if (!escrowState || escrowState !== "Sale") {
-      return;
-    }
+    if (!escrowState) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
 
       const signer = provider.getSigner(); // Your current metamask account;
-      const forPurchase = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
 
-      // contract.on("PurchaseConfirmed", () => {
-      //   alert("PurchaseConfirmed");
-      // })
+      contract.on("PurchaseConfirmed", () => {
+        alert("PurchaseConfirmed");
+      })
 
-      const transaction = await forPurchase.confirmPurchase({ value: ethers.utils.parseEther("2.0") });
+      const transaction = await contract.confirmPurchase({ value: ethers.utils.parseEther("2.0") });
       await transaction.wait();
     }
   }
 
-  async function receive() {
-    if (!escrowState || escrowState !== "Locked") {
-      return;
+  // // Only show this after purchase
+  async function showBuyer() {
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider)
+
+    try {
+      const contractBuyer = await contract.buyer();
+      setBuyer(contractBuyer);
+      console.log(contractBuyer);
+      
+      const contractBuyerBalance = await provider.getBalance(buyer);
+      setBuyerBalance(contractBuyerBalance);
+      console.log(contractBuyerBalance.toString());
+
+      // Should make this work and listen to the event
+    } catch (err) {
+      console.log("Error: ", err)
     }
+  }
+
+  async function receive() {
+    if (!escrowState) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
 
       const signer = provider.getSigner(); // Your current metamask account;
       const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-
-      // contract.on("PurchaseConfirmed", () => {
-      //   alert("PurchaseConfirmed");
-      // })
-
+      
       const transaction = await contract.confirmReceived();
       await transaction.wait();
 
@@ -234,25 +209,8 @@ function App() {
 
       const signer = provider.getSigner(); // Your current metamask account;
 
-      const forRefund = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-      const transaction = await forRefund.refundSeller();
-      await transaction.wait();
-
-      // call currentEscrowState here and it will show you inactive at the screen
-      // fetchGreeting()
-    }
-  }
-
-  async function restart() {
-    if (!escrowState) return
-
-    if (typeof window.ethereum !== 'undefined') {
-      await requestAccount()
-
-      const signer = provider.getSigner(); // Your current metamask account;
-
-      const forRestart = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-      const transaction = await forRestart.restartContract({ value: ethers.utils.parseEther("2.0") });
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await contract.refundSeller();
       await transaction.wait();
 
       // call currentEscrowState here and it will show you inactive at the screen
@@ -268,8 +226,12 @@ function App() {
 
       const signer = provider.getSigner(); // Your current metamask account;
 
-      const forEnd = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-      const transaction = await forEnd.end();
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      contract.on("End", () => {
+        alert("End"); // Contract is detroyed
+      })
+
+      const transaction = await contract.end();
       await transaction.wait();
 
       // call currentEscrowState here and it will show you inactive at the screen
@@ -277,104 +239,37 @@ function App() {
     }
   }
 
-  // alert(escrowState);
+  return (
+    <div className="App">
+      <header className="App-header">
+        <button onClick={showCurrentEscrowValue} >Show me the price(value) of the contract</button>
+        <button onClick={showCurrentEscrowState} >Show me the current state of the contract</button>
+        <h1>{escrowState} ({contract.address})</h1>
 
-  // const classes = useStyles();
+        <br />
 
-  // user === null? no metamask?
-  // if (!user) {
-  //   // return null;
-  //   return <p>
-  //     Include any signer such as Metamask.
-  //   </p>;
-  // }
+        <button onClick={showSeller}>Show seller at console</button>
+        <button onClick={abort}>Abort</button>
+        <button onClick={refund}>Refund</button>
+        <button onClick={end}>End</button>
 
-  // Include role?
+        <br />
 
-  // Seller.js
-  if (user === seller) {
-    return (<div>
-      <ContractDetails 
-        sales={escrowSales}
-        state={escrowState}
-        price={price}
-        balance={escrowBalance}
-      />
+        <button onClick={purchase}>Purchase</button>
+        <button onClick={showBuyer}>Show Buyer at console</button>
+        <button onClick={receive}>Receive</button>
 
-      <br />
+        {/* <br />
 
-      <Seller 
-        address={seller}
-        balance={sellerBalance}
+        <button onClick={confirmPurchase}>Confirm Purchase</button>
+        <button onClick={confirmReceived}>Confirm Received</button>
 
-        state={escrowState}
-
-        close={close}
-        refund={refund}
+        <br />
         
-        restart={restart}
-        end={end}
-      />
-
-    </div>);
-  }
-
-  // Buyer.js
-  if (user === buyer) {
-    return (<div>
-      <ContractDetails
-        sales={escrowSales}
-        state={escrowState}
-        price={price}
-        balance={escrowBalance}
-      />
-
-      <br />
-
-      <Buyer
-        address={seller}
-        balance={buyerBalance}
-
-        state={escrowState}
-
-        receive={receive}
-      />
-    </div>);
-  }
-
-  // Visitor.js
-  return (<div>
-    <ContractDetails
-      sales={escrowSales}
-      state={escrowState}
-      price={price}
-      balance={escrowBalance}
-    />
-
-    <br />
-
-   <Visitor 
-      address={seller}
-      balance={userBalance}
-
-      state={escrowState}
-
-      purchase={purchase}
-   />
-    
-    {/* Include purchase button to use here */}
-  </div>);
+        <button onClick={refundSeller}>Refund Seller</button> */}
+      </header>
+    </div>
+  );
 }
 
 export default App;
-
-{/* <Button variant="contained">Default</Button>
-      <Button variant="contained" color="primary">
-    Primary
-      </Button>
-      <Button variant="contained" color="secondary">
-    Secondary
-      </Button>
-      <Button variant="contained" disabled>
-    Disabled
-      </Button> */}

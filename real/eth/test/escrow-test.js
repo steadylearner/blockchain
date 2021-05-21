@@ -179,6 +179,49 @@ describe("Escrow State", function() {
     (Seller)
     and allow refundSeller -> 'Complete' and contract should increase total_sales.
     Then, the seller can restart the contract.
+    (First Buyer)
+    Then, first buyer can rebuy
+  `, async function () {
+
+    await firstPurchase();
+
+    await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
+
+    expect(await escrow.state()).to.equal(0); // Sale again
+    
+    // 
+
+    expect(await escrow.seller()).to.equal(seller.address);
+    expect(await escrow.state()).to.equal(0); // Sale
+
+    expect(await escrow.buyer()).to.equal("0x0000000000000000000000000000000000000000"); // Not set yet, default
+
+    // Revert with the error message "Seller shouldn't call this"
+    await expectRevert(escrow.confirmPurchase({ value: ethers.utils.parseEther("2.0") }), "Seller shouldn't call this");
+
+    // How to set msg.sender for ether js?
+    // Use connect method
+    await escrow.connect(firstBuyer).confirmPurchase({ value: ethers.utils.parseEther("2.0") })
+
+    expect(await escrow.buyer()).to.equal(firstBuyer.address);
+    expect(await escrow.state()).to.equal(1); // Locked
+
+    await escrow.connect(firstBuyer).confirmReceived();
+
+    expect(await escrow.state()).to.equal(2); // Released
+
+    await escrow.refundSeller();
+
+    expect(await escrow.state()).to.equal(4); // Complete
+    expect(await escrow.total_sales()).to.equal(2); // Complete
+  });
+
+  it(`
+    (First Buyer)
+    Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
+    (Seller)
+    and allow refundSeller -> 'Complete' and contract should increase total_sales.
+    Then, the seller can restart the contract.
   `, async function () {
 
     await firstPurchase();
@@ -218,10 +261,12 @@ describe("Escrow State", function() {
     // Second Buyer
 
     expect(await escrow.state()).to.equal(0); // Sale again
-    expect(await escrow.seller()).to.equal(seller.address);
+    // Buyer should be reset;
+    expect(await escrow.buyer()).to.equal("0x0000000000000000000000000000000000000000");
 
     // Repeat the almost same code for the second buyer.
-    expect(await escrow.buyer()).to.equal(firstBuyer.address); // Yet, First Buyer 
+    // expect(await escrow.buyer()).to.equal(firstBuyer.address); // Yet, First Buyer 
+
 
     // Revert with the error message "Seller shouldn't call this"
     await expectRevert(escrow.confirmPurchase({ value: ethers.utils.parseEther("2.0") }), "Seller shouldn't call this");

@@ -192,6 +192,12 @@ contract Escrow {
             require((2 * price) == msg.value, "Value has to be equal to what started the contract.");
 
             state = State.Sale;
+            
+            // Reset buyer to allow the same buyer again?
+            buyer = payable(0);
+            // This doesn't work.
+            // buyer = address(0);
+
             emit Restarted();
         }
     }
