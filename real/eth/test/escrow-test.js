@@ -176,6 +176,9 @@ describe("Escrow Events and State", function() {
     expect(await escrow.state()).to.equal(3); // Closed
 
     await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
+    let event = await restartedEvent;
+    console.log("Restarted");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
 
     expect(await escrow.state()).to.equal(0); // Sale
   });
