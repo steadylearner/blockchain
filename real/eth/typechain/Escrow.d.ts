@@ -27,12 +27,13 @@ interface EscrowInterface extends ethers.utils.Interface {
     "confirmPurchase()": FunctionFragment;
     "confirmReceived()": FunctionFragment;
     "end()": FunctionFragment;
+    "listPreviousBuyers()": FunctionFragment;
     "price()": FunctionFragment;
     "refundSeller()": FunctionFragment;
     "restartContract()": FunctionFragment;
     "seller()": FunctionFragment;
     "state()": FunctionFragment;
-    "total_sales()": FunctionFragment;
+    "totalSales()": FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: "buyer", values?: undefined): string;
@@ -46,6 +47,10 @@ interface EscrowInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "end", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "listPreviousBuyers",
+    values?: undefined
+  ): string;
   encodeFunctionData(functionFragment: "price", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "refundSeller",
@@ -58,7 +63,7 @@ interface EscrowInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "seller", values?: undefined): string;
   encodeFunctionData(functionFragment: "state", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "total_sales",
+    functionFragment: "totalSales",
     values?: undefined
   ): string;
 
@@ -73,6 +78,10 @@ interface EscrowInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "end", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "listPreviousBuyers",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "price", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "refundSeller",
@@ -84,24 +93,21 @@ interface EscrowInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "seller", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "total_sales",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "totalSales", data: BytesLike): Result;
 
   events: {
-    "Closed()": EventFragment;
-    "ItemReceived()": EventFragment;
-    "PurchaseConfirmed()": EventFragment;
-    "Resell()": EventFragment;
-    "Restarted()": EventFragment;
-    "SellerRefunded()": EventFragment;
+    "Closed(uint256)": EventFragment;
+    "End(uint256)": EventFragment;
+    "ItemReceived(uint256,address)": EventFragment;
+    "PurchaseConfirmed(uint256,address)": EventFragment;
+    "Restarted(uint256)": EventFragment;
+    "SellerRefunded(uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Closed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "End"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ItemReceived"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "PurchaseConfirmed"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Resell"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Restarted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SellerRefunded"): EventFragment;
 }
@@ -186,6 +192,10 @@ export class Escrow extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    listPreviousBuyers(overrides?: CallOverrides): Promise<[string[]]>;
+
+    "listPreviousBuyers()"(overrides?: CallOverrides): Promise<[string[]]>;
+
     price(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "price()"(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -214,9 +224,13 @@ export class Escrow extends Contract {
 
     "state()"(overrides?: CallOverrides): Promise<[number]>;
 
-    total_sales(overrides?: CallOverrides): Promise<[BigNumber]>;
+    totalSales(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { count: BigNumber }>;
 
-    "total_sales()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+    "totalSales()"(
+      overrides?: CallOverrides
+    ): Promise<[BigNumber] & { count: BigNumber }>;
   };
 
   buyer(overrides?: CallOverrides): Promise<string>;
@@ -255,6 +269,10 @@ export class Escrow extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  listPreviousBuyers(overrides?: CallOverrides): Promise<string[]>;
+
+  "listPreviousBuyers()"(overrides?: CallOverrides): Promise<string[]>;
+
   price(overrides?: CallOverrides): Promise<BigNumber>;
 
   "price()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -283,9 +301,9 @@ export class Escrow extends Contract {
 
   "state()"(overrides?: CallOverrides): Promise<number>;
 
-  total_sales(overrides?: CallOverrides): Promise<BigNumber>;
+  totalSales(overrides?: CallOverrides): Promise<BigNumber>;
 
-  "total_sales()"(overrides?: CallOverrides): Promise<BigNumber>;
+  "totalSales()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
     buyer(overrides?: CallOverrides): Promise<string>;
@@ -308,6 +326,10 @@ export class Escrow extends Contract {
 
     "end()"(overrides?: CallOverrides): Promise<void>;
 
+    listPreviousBuyers(overrides?: CallOverrides): Promise<string[]>;
+
+    "listPreviousBuyers()"(overrides?: CallOverrides): Promise<string[]>;
+
     price(overrides?: CallOverrides): Promise<BigNumber>;
 
     "price()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -328,23 +350,31 @@ export class Escrow extends Contract {
 
     "state()"(overrides?: CallOverrides): Promise<number>;
 
-    total_sales(overrides?: CallOverrides): Promise<BigNumber>;
+    totalSales(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "total_sales()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "totalSales()"(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   filters: {
-    Closed(): TypedEventFilter<[], {}>;
+    Closed(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 
-    ItemReceived(): TypedEventFilter<[], {}>;
+    End(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 
-    PurchaseConfirmed(): TypedEventFilter<[], {}>;
+    ItemReceived(
+      when: null,
+      by: null
+    ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
 
-    Resell(): TypedEventFilter<[], {}>;
+    PurchaseConfirmed(
+      when: null,
+      by: null
+    ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
 
-    Restarted(): TypedEventFilter<[], {}>;
+    Restarted(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 
-    SellerRefunded(): TypedEventFilter<[], {}>;
+    SellerRefunded(
+      when: null
+    ): TypedEventFilter<[BigNumber], { when: BigNumber }>;
   };
 
   estimateGas: {
@@ -384,6 +414,10 @@ export class Escrow extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    listPreviousBuyers(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "listPreviousBuyers()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     price(overrides?: CallOverrides): Promise<BigNumber>;
 
     "price()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -412,9 +446,9 @@ export class Escrow extends Contract {
 
     "state()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    total_sales(overrides?: CallOverrides): Promise<BigNumber>;
+    totalSales(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "total_sales()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "totalSales()"(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -454,6 +488,14 @@ export class Escrow extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    listPreviousBuyers(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "listPreviousBuyers()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     price(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "price()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -482,8 +524,8 @@ export class Escrow extends Contract {
 
     "state()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    total_sales(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    totalSales(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "total_sales()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    "totalSales()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

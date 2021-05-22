@@ -20,7 +20,9 @@ contract Escrow {
 
     // Include openzepplin library for this to increase?
     // total_successful_purchases
-    uint public total_sales = 0; 
+    // uint public total_sales = 0; 
+
+    address[] previousBuyers;
 
     // Include item here later to describe the product?
     // Optionally include function to update it?
@@ -81,13 +83,28 @@ contract Escrow {
         _;
     }
 
-    event Closed();
-    event PurchaseConfirmed();
-    event ItemReceived();
-    event SellerRefunded();
-    event Resell();
-    event Restarted();
-    // event End();
+    event Closed(
+        uint256 when
+    );
+
+    event PurchaseConfirmed(
+        uint256 when,
+        address by
+    );
+    event ItemReceived(
+        uint256 when,
+        address by
+    );
+    event SellerRefunded(
+        uint256 when
+    );
+
+    event Restarted(
+        uint256 when
+    );
+    event End(
+        uint256 when
+    );
 
     /// Ensure that `msg.value` is an even number.
     /// Division will truncate if it is an odd number.
@@ -128,7 +145,10 @@ contract Escrow {
         // last call in this function and we
         // already changed the state.
         seller.transfer(address(this).balance); // Should manually check the change at metamask?
-        emit Closed(); // How to listen to this?
+        
+        emit Closed(
+            block.timestamp
+        ); // How to listen to this?
     }
 
     // /// Confirm the purchase as buyer.
@@ -142,9 +162,13 @@ contract Escrow {
         condition(msg.value == (2 * price))
         payable
     {
-        emit PurchaseConfirmed();
         buyer = payable(msg.sender);
         state = State.Locked;
+
+        emit PurchaseConfirmed(
+            block.timestamp,
+            buyer
+        );
     }
 
     // /// Confirm that you (the buyer) received the item.
@@ -160,7 +184,10 @@ contract Escrow {
         state = State.Release;
 
         buyer.transfer(price); // Buyer receive 1 x value here
-        emit ItemReceived();
+        emit ItemReceived(
+            block.timestamp,
+            buyer
+        );
     }
 
     /// This function refunds the seller, i.e.
@@ -177,8 +204,12 @@ contract Escrow {
         
         seller.transfer(3 * price); // Seller receive 3 x value here
 
-        total_sales = total_sales + 1; // Include openzepplin library for this to increase?
-        emit SellerRefunded();
+        // total_sales = total_sales + 1; // Include openzepplin library for this to increase?
+        previousBuyers.push(buyer);
+
+        emit SellerRefunded(
+            block.timestamp
+        );
     }
 
     // Should test it work
@@ -198,8 +229,19 @@ contract Escrow {
             // This doesn't work.
             // buyer = address(0);
 
-            emit Restarted();
+            emit Restarted(
+                block.timestamp
+            );
         }
+    }
+
+    function listPreviousBuyers()public view returns(address [] memory){
+        return previousBuyers;
+    }
+
+    // totalPreviousBuyers
+    function totalSales() public view returns(uint count) {
+        return previousBuyers.length;
     }
 
     function end() 
@@ -207,12 +249,21 @@ contract Escrow {
         onlySeller
     {
          if (state == State.Closed || state == State.Complete) {
+            emit End(
+                block.timestamp
+            );
+            
             // state = State.End;
             selfdestruct(seller);
             // After a contract calls selfdestruct, the code and storage associated with the contract are removed from the Ethereum's World State.
             // Transactions after that point will behave as if the address were an externally owned account, i.e. transaction will be accepted, no processing will be done, and the transaction status will be success.
             // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
             // emit End(); // Will this work?
+
+            // emit End(
+            //     block.timestamp
+            // );
+            
         }
     }
 }

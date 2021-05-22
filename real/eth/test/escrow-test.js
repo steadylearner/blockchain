@@ -26,7 +26,7 @@ describe("Escrow State", function() {
   it("Should set the contract state to 'Closed'.", async function () {
     expect(await escrow.seller()).to.equal(seller.address);
 
-    expect(await escrow.total_sales()).to.equal(0); // Should be 0
+    expect(await escrow.totalSales()).to.equal(0); // Should be 0
     expect(await escrow.state()).to.equal(0); // Sale
 
     // const beforeContractBalance = await provider.getBalance(escrow.address);
@@ -118,9 +118,11 @@ describe("Escrow State", function() {
     await expectRevert(escrow.refundSeller(), "revert Invalid state");
   });
 
+  // Should make tests work from this.
+
   it(`
     Should set the contract state to 'Sale' -> 'Locked' -> 'Release' (Fisrt Buyer)
-    and allow refundSeller -> 'Complete' and contract should increase total_sales. (Seller)
+    and allow refundSeller -> 'Complete' and contract should increase total sales. (Seller)
   `, async function () {
     expect(await escrow.seller()).to.equal(seller.address);
     expect(await escrow.state()).to.equal(0); // Sale
@@ -144,7 +146,7 @@ describe("Escrow State", function() {
     await escrow.refundSeller();
     
     expect(await escrow.state()).to.equal(4); // Complete
-    expect(await escrow.total_sales()).to.equal(1); // Complete
+    expect(await escrow.totalSales()).to.equal(1); // Complete
   });
 
   const firstPurchase = async () => {
@@ -170,14 +172,44 @@ describe("Escrow State", function() {
     await escrow.refundSeller();
 
     expect(await escrow.state()).to.equal(4); // Complete
-    expect(await escrow.total_sales()).to.equal(1); // Complete
+    expect(await escrow.totalSales()).to.equal(1); // Complete
   }
 
   it(`
     (First Buyer)
     Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
     (Seller)
-    and allow refundSeller -> 'Complete' and contract should increase total_sales.
+    and allow refundSeller -> 'Complete' and contract should increase total sales.
+    Then, the seller can restart the contract.
+  `, async function () {
+
+    await firstPurchase();
+
+    await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
+
+    expect(await escrow.state()).to.equal(0); // Sale again
+  });
+
+  it(`
+    (First Buyer)
+    Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
+    (Seller)
+    and allow refundSeller -> 'Complete' and contract should increase total sales.
+    Then, the seller can end the contract.
+  `, async function () {
+
+    await firstPurchase();
+
+    await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
+
+    await escrow.end();
+  });
+
+  it(`
+    (First Buyer)
+    Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
+    (Seller)
+    and allow refundSeller -> 'Complete' and contract should increase total sales.
     Then, the seller can restart the contract.
     (First Buyer)
     Then, first buyer can rebuy
@@ -187,8 +219,6 @@ describe("Escrow State", function() {
 
     await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
 
-    expect(await escrow.state()).to.equal(0); // Sale again
-    
     // 
 
     expect(await escrow.seller()).to.equal(seller.address);
@@ -213,44 +243,14 @@ describe("Escrow State", function() {
     await escrow.refundSeller();
 
     expect(await escrow.state()).to.equal(4); // Complete
-    expect(await escrow.total_sales()).to.equal(2); // Complete
-  });
-
-  it(`
-    (First Buyer)
-    Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
-    (Seller)
-    and allow refundSeller -> 'Complete' and contract should increase total_sales.
-    Then, the seller can restart the contract.
-  `, async function () {
-
-    await firstPurchase();
-    
-    await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
-
-    expect(await escrow.state()).to.equal(0); // Sale again
-  });
-
-  it(`
-    (First Buyer)
-    Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
-    (Seller)
-    and allow refundSeller -> 'Complete' and contract should increase total_sales.
-    Then, the seller can end the contract.
-  `, async function () {
-
-    await firstPurchase();
-    
-    await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
-
-    await escrow.end();
+    expect(await escrow.totalSales()).to.equal(2); // Complete
   });
 
   it(`
     (Second Buyer)
     Should set the contract state to 'Sale' -> 'Locked' -> 'Release' 
     (Seller)
-    and allow refundSeller -> 'Complete' and contract should increase total_sales.
+    and allow refundSeller -> 'Complete' and contract should increase total sales.
     Then, the seller can restart the contract
   `, async function () {
 
@@ -285,8 +285,11 @@ describe("Escrow State", function() {
 
     expect(await escrow.state()).to.equal(4); // Complete
 
-    expect(await escrow.total_sales()).to.equal(2); // One more purchase
+    expect(await escrow.totalSales()).to.equal(2); // One more purchase
 
     await escrow.restartContract({ value: ethers.utils.parseEther("2.0") });
+
+    // Without deep, it fails here.
+    expect(await escrow.listPreviousBuyers()).to.deep.equal([firstBuyer.address, secondBuyer.address])
   });
 });

@@ -44,7 +44,7 @@ const humanReadableEscrowState = (escrowState) => {
   } else if (escrowState === 2) {
     return "Release";
   } else if (escrowState === 3) {
-    return "Close";
+    return "Closed";
   } else if (escrowState === 4) {
     return "Complete";
   }
@@ -69,7 +69,9 @@ async function requestAccount() {
 // Include event listener and setState 
 // for total_sales, role, userBalance, escrowState, escrowBalance 
 // or simply reload the page
-// 2. Use context and separate logic
+// 2. Use context and separate logic(components and functions)
+
+// Commands to develope better
 
 // Improve CSS with semantic-ui-react?
 // https://github.com/substrate-developer-hub/substrate-front-end-template
