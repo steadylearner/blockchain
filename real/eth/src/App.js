@@ -71,13 +71,9 @@ async function requestAccount() {
   }
 }
 
-// 1.
-// Include event listener and setState 
-// for total_sales, role, userBalance, escrowState, escrowBalance 
-// or simply reload the page
-// 2. show previousBuyers with table?, Use context and separate logic(components and functions),
-
-// Commands to develope better
+// 1. show previousBuyers with table?, Commands to develope better,
+// 2. include users to social medias and copyright with steadylearner to help me find a job.
+// Use context and separate logic(components and functions),
 
 // Improve CSS with semantic-ui-react?
 // https://github.com/substrate-developer-hub/substrate-front-end-template
@@ -93,7 +89,7 @@ function App() {
   const [escrow, setEscrow] = useState({
     state: null,
     balance: 0,
-    price: 1,
+    price: 1, // 1 ETH by default
     sales: 0,
     previousBuyers: [],
   });
@@ -483,6 +479,7 @@ function App() {
   // alert(escrowState);
   // alert(role);
 
+  // End event
   if (!contractEnd) {
     return null;
   }

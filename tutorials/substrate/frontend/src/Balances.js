@@ -41,7 +41,7 @@ export default function Main (props) {
               <strong>Balance</strong>
             </Table.Cell>
           </Table.Row>
-          {accounts.map(account =>
+          {accounts.slice(0, 3).map(account =>
             <Table.Row key={account.address}>
               <Table.Cell width={3} textAlign='right'>{account.meta.name}</Table.Cell>
               <Table.Cell width={10}>

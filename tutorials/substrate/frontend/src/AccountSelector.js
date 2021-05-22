@@ -19,7 +19,7 @@ function Main (props) {
   const [accountSelected, setAccountSelected] = useState('');
 
   // Get the list of accounts we possess the private key for
-  const keyringOptions = keyring.getPairs().map(account => ({
+  const keyringOptions = keyring.getPairs().slice(0, 3).map(account => ({
     key: account.address,
     value: account.address,
     text: account.meta.name.toUpperCase(),
