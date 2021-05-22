@@ -33,8 +33,9 @@ const Visitor = ({
                 flexFlow: "column",
             }}>
                 {escrowState === "Sale" && <Button style={fullWidth} onClick={purchase} color="primary" variant="contained">I want to buy this</Button>}
-                {escrowState === "Locked" && <p><b>"The seller is sending a car to another client. Please, visit this page again later if you want to buy a car with this seller."</b></p>}
-                {escrowState === "Complete" && <p><b>"Wait for the seller to sale a car again or not."</b></p>}
+                {escrowState === "Locked" && <p>"The seller is sending a car to another client. Please, visit this page again later if you want to buy a car with this seller."</p>}
+                {escrowState === "Complete" && <p>"Wait for the seller to sale a car again or not."</p>}
+                {escrowState === "Release" && <p>"The seller will decide to sell a car again or not. Please wait if you want to buy it."</p>}
             </div>
         </>
     )

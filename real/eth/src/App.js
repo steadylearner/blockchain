@@ -9,12 +9,14 @@
 // 5. Buyer can restart the contract with new information?
 // all again until buyer end the contract
 
-// Update frontend and include event listeners for it and test also?
-// Use context and separate components?
+// 1. Include the link to show previousPurchases
+// 2. Organize the app. Use context and separate components?
 
 // import './App.css';
 import { useEffect, useState } from 'react';
-import { ethers } from 'ethers'
+import { Contract, ethers } from 'ethers'
+
+import moment from "moment";
 
 // import Button from '@material-ui/core/Button';
 
@@ -35,6 +37,10 @@ const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 // Move this to context?
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
+
+const humanReadableUnixTimestamp = (timestampInt) => {
+  return new Date(timestampInt * 1000);
+}
 
 const humanReadableEscrowState = (escrowState) => {
   if (escrowState === 0) {
@@ -69,27 +75,44 @@ async function requestAccount() {
 // Include event listener and setState 
 // for total_sales, role, userBalance, escrowState, escrowBalance 
 // or simply reload the page
-// 2. Use context and separate logic(components and functions)
+// 2. show previousBuyers with table?, Use context and separate logic(components and functions),
 
 // Commands to develope better
 
 // Improve CSS with semantic-ui-react?
 // https://github.com/substrate-developer-hub/substrate-front-end-template
 function App() {
-  // Include to context?
-  
   // contract.on window.location.reload();
 
-  const [escrowState, setEscrowState] = useState();
-  const [escrowBalance, setEscrowBalance] = useState();
-  const [escrowPrice, setEscrowPrice] = useState();
-  const [escrowSales, setEscrowSales] = useState();
+  // Use object instead?
 
+  // const [lastEdited, setLastEdited] = useState();
+
+  const [contractEnd, setContractEnd] = useState(true);
+
+  const [escrow, setEscrow] = useState({
+    state: null,
+    balance: 0,
+    price: 1,
+    sales: 0,
+    previousBuyers: [],
+  });
+
+  // const [escrowState, setEscrowState] = useState();
+  // const [escrowBalance, setEscrowBalance] = useState();
+  // const [escrowPrice, setEscrowPrice] = useState();
+  // const [escrowSales, setEscrowSales] = useState();
+  // const [escrowPreviousBuyers, setEscrowPreviousBuyers] = useState();
+
+  // Use object instead?
   const [seller, setSeller] = useState();
   const [sellerBalance, setSellerBalance] = useState();
+
+  // Use object instead?
   const [buyer, setBuyer] = useState();
   const [buyerBalance, setBuyerBalance] = useState();
 
+  // Use object instead?
   const [user, setUser] = useState();
   const [userBalance, setUserBalance] = useState();
   
@@ -99,15 +122,209 @@ function App() {
     async function fetchData() {
 
       try {
-        // Contract 
+        // Contract Events
+
+        contract.on("Closed", async (when, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          const contractSeller = await contract.seller();
+          const contractSellerBalance = await provider.getBalance(contractSeller);
+          setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+
+          // console.log("when");
+          // console.log(when);
+          // console.log(humanReadableUnixTimestamp(when));
+          console.log("Event - Closed");
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("ConfirmPurchase", async (when, by, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          setBuyer(by);
+          const contractBuyerBalance = await provider.getBalance(by);
+          setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance));
+
+          setRole("buyer");
+          console.log("This visitor became the buyer of this contract");
+
+          // console.log("when");
+          // console.log(when);
+          // console.log(humanReadableUnixTimestamp(when));
+          console.log("Event - ConfirmPurchase");
+          console.log(`By - ${by}`);
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("ConfirmReceived", async (when, by, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+          console.log(previousBuyers);
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          setBuyer(by);
+          const contractBuyerBalance = await provider.getBalance(by);
+          setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance));
+
+          console.log("Event - ConfirmReceived");
+          console.log(`By - ${by}`);
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("SellerRefunded", async (when, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+
+          const previousBuyers = await contract.listPreviousBuyers();
+          console.log(previousBuyers);
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          const contractSeller = await contract.seller();
+          const contractSellerBalance = await provider.getBalance(contractSeller);
+          setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+
+          console.log("Event - SellerRefunded");
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("Restarted", async (when, event) => {
+          event.removeListener();
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+          const contractSeller = await contract.seller();
+          const contractSellerBalance = await provider.getBalance(contractSeller);
+          setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+
+          setBuyer();
+          setBuyerBalance();
+
+          console.log("Event - Restarted");
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("End", async () => {
+          // This doesn't work
+          // event.removeListener();
+          
+          setContractEnd(false);
+          // setEscrow({
+          //   ...escrow,
+          //   state: null,
+          // })
+        });
+
+        // contract.on("Restarted", async (when) => {
+        //   const contractBalance = await provider.getBalance(contract.address);
+        //   const contractBalance = await provider.getBalance(contract.address);
+
+        //   // const contractSeller = await contract.seller();
+        //   // const contractSellerBalance = await provider.getBalance(seller);
+        //   // setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+          
+        //   setEscrow({
+        //     ...escrow,
+        //     state: "Closed",
+        //     balance: ethers.utils.formatEther(contractBalance.toString()),
+        //   })
+
+        //   // console.log("when");
+        //   // console.log(when);
+        //   // console.log(humanReadableUnixTimestamp(when));
+        //   console.log("Closed");
+        //   console.log(moment(humanReadableUnixTimestamp(when)).fromNow())
+
+        //   // setLastEdited(moment(humanReadableUnixTimestamp(when)).fromNow());
+
+        //   // setEscrowState("Closed");
+        //   // setEscrowBalance(0);
+        // });
+
+        // Contract State
         const contractState = await contract.state()
-        setEscrowState(humanReadableEscrowState(contractState));
         const contractBalance = await provider.getBalance(contract.address);
-        setEscrowBalance(ethers.utils.formatEther(contractBalance));
         const contractPrice = await contract.price()
-        setEscrowPrice(ethers.utils.formatEther(contractPrice));
-        const contractSales = await contract.total_sales();
-        setEscrowSales(contractSales.toString());
+        // const contractSales = await contract.totalSales();
+        const contractPreviousBuyers = await contract.listPreviousBuyers();
+        // console.log(contractPreviousBuyers);
+
+        setEscrow({
+          state: humanReadableEscrowState(contractState),
+          balance: ethers.utils.formatEther(contractBalance.toString()),
+          price: ethers.utils.formatEther(contractPrice.toString()),
+          // sales: contractSales.toString(),
+          previousBuyers: contractPreviousBuyers,
+        })
+
+        // state: humanReadableEscrowState(contractState),
+        // balance: contractBalance.toString(),
+        // price: ethers.utils.formatEther(contractPrice.toString()),
+        // sales: contractSales,
+        // previousBuyers: contractPreviousBuyers,
+
+        // const contractState = await contract.state()
+        // setEscrowState(humanReadableEscrowState(contractState));
+        // const contractBalance = await provider.getBalance(contract.address);
+        // setEscrowBalance(ethers.utils.formatEther(contractBalance));
+        // const contractPrice = await contract.price()
+        // setEscrowPrice(ethers.utils.formatEther(contractPrice));
+        // const contractSales = await contract.totalSales();
+        // setEscrowSales(contractSales.toString());
+        // const contractPreviousBuyers = await contract.listPreviousBuyers();
+        // setEscrowPreviousBuyers(contractPreviousBuyers);
+        // console.log(contractPreviousBuyers);
 
         const contractSeller = await contract.seller();
         setSeller(contractSeller);
@@ -145,7 +362,7 @@ function App() {
   // Use context to save Contract and Provider and sperad these functions to each components that need them.
 
   async function close() {
-    if (!escrowState || escrowState !== "Sale") {
+    if (!escrow.state || escrow.state !== "Sale") {
       return;
     }
 
@@ -170,7 +387,7 @@ function App() {
 
   // Visitor
   async function purchase() {
-    if (!escrowState || escrowState !== "Sale") {
+    if (!escrow.state || escrow.state !== "Sale") {
       return;
     }
 
@@ -190,7 +407,7 @@ function App() {
   }
 
   async function receive() {
-    if (!escrowState || escrowState !== "Locked") {
+    if (!escrow.state || escrow.state !== "Locked") {
       return;
     }
 
@@ -213,7 +430,7 @@ function App() {
   }
 
   async function refund() {
-    if (!escrowState) return
+    if (!escrow.state) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -230,7 +447,7 @@ function App() {
   }
 
   async function restart() {
-    if (!escrowState) return
+    if (!escrow.state) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -247,7 +464,7 @@ function App() {
   }
 
   async function end() {
-    if (!escrowState) return
+    if (!escrow.state) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -263,7 +480,14 @@ function App() {
     }
   }
 
-  if (!escrowState) {
+  // alert(escrowState);
+  // alert(role);
+
+  if (!contractEnd) {
+    return null;
+  }
+
+  if (!escrow.state) {
     return null;
   } 
 
@@ -275,15 +499,16 @@ function App() {
       alignItems: "center"
     }}>
       <ContractDetails
-        sales={escrowSales}
-        escrowState={escrowState}
-        price={escrowPrice}
-        balance={escrowBalance}
+        sales={escrow.previousBuyers.length}
+        escrowState={escrow.state}
+        price={escrow.price}
+        balance={escrow.balance}
+        // lastEdited={lastEdited}
       />
 
       <br />
 
-      <div style={{
+      {role && <div style={{
         // marginTop: "1rem",
         marginLeft: "1rem",
 
@@ -297,7 +522,7 @@ function App() {
           address={seller}
           balance={sellerBalance}
 
-          escrowState={escrowState}
+          escrowState={escrow.state}
           close={close}
           refund={refund}
 
@@ -309,7 +534,7 @@ function App() {
           address={user}
           balance={userBalance}
 
-          escrowState={escrowState}
+          escrowState={escrow.state}
 
           purchase={purchase}
         />}
@@ -320,11 +545,11 @@ function App() {
           address={buyer}
           balance={buyerBalance}
 
-          escrowState={escrowState}
+          escrowState={escrow.state}
 
           receive={receive}
         />}
-      </div>
+      </div>}
     </div>
   );
 }

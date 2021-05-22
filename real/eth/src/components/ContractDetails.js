@@ -8,6 +8,7 @@ const ContractDetails = ({
     balance,
     price,
     escrowState,
+    lastEdited,
 }) => {
     return (
         <div style={{
@@ -44,6 +45,7 @@ const ContractDetails = ({
             </div>
             
             <p>Total sales: <b>{sales}</b></p>
+            {/* {lastEdited && <p>Last edited: {lastEdited}</p>} */}
             <p>The current state of this escrow contract is <b>{escrowState}</b>.</p>
             <p>The current balance of this escrow contract is <b>{balance} ETH</b>.</p>
 

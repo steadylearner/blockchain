@@ -33,8 +33,8 @@ const Buyer = ({
                 flexFlow: "column",
             }}>
                 {escrowState === "Locked" && <Button style={fullWidth} color="primary" onClick={receive} variant="contained">I received the product</Button>}
-                {escrowState === "Release" && <p><b>"You confirmed you already received this product."</b></p>}
-                {escrowState === "Complete" && <p><b>"If you want to buy a new one again, please wait for the seller to sale a car again or not."</b></p>}
+                {escrowState === "Release" && <p>"You confirmed you already received this product."</p>}
+                {escrowState === "Complete" && <p>"If you want to buy a new one again, please wait for the seller to sale a car again or not."</p>}
             </div>
         </>
     )
