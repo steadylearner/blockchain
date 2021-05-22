@@ -4,10 +4,20 @@ const { expect } = require("chai");
 const { expectRevert } = require('@openzeppelin/test-helpers');
 
 // // Include balance check. (Do this and write a blog post with updated frontend.)
-// // Then, event later.
-describe("Escrow State", function() {
+const humanReadableUnixTimestamp = (timestampInt) => {
+  return new Date(timestampInt * 1000);
+}
+
+describe("Escrow Events and State", function() {
   let provider;
   let Escrow, escrow, seller, firstBuyer, secondBuyer; // seller is owner
+
+  let closedEvent, 
+      confirmPurchaseEvent, 
+      confirmReceivedEvent, 
+      sellerRefundedEvent, 
+      restartedEvent,
+      endEvent;
 
   beforeEach(async () => {
     provider = ethers.getDefaultProvider();
@@ -17,6 +27,94 @@ describe("Escrow State", function() {
 
     [seller, firstBuyer, secondBuyer, _] = await ethers.getSigners();
 
+    // Find the better desgin for this.
+    // EVENTS
+    closedEvent = new Promise((resolve, reject) => {
+      escrow.on('Closed', (when, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
+    confirmPurchaseEvent = new Promise((resolve, reject) => {
+      escrow.on('ConfirmPurchase', (when, by, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
+          by,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
+    confirmReceivedEvent = new Promise((resolve, reject) => {
+      escrow.on('ConfirmReceived', (when, by, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
+          by,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
+    sellerRefundedEvent = new Promise((resolve, reject) => {
+      escrow.on('SellerRefunded', (when, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
+    restartedEvent = new Promise((resolve, reject) => {
+      escrow.on('Restarted', (when, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
+    endEvent = new Promise((resolve, reject) => {
+      escrow.on('End', (when, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
     // console.log(escrow.address);
     // console.log(escrow.deployTransaction);
   })
@@ -24,6 +122,10 @@ describe("Escrow State", function() {
   // Seller
 
   it("Should set the contract state to 'Closed'.", async function () {
+    // assert.equal(event.from, account[0].address);
+    // assert.equal(event.to, account[1].address);
+    // assert.equal(event.amount.toNumber(), 12345);
+
     expect(await escrow.seller()).to.equal(seller.address);
 
     expect(await escrow.totalSales()).to.equal(0); // Should be 0
@@ -36,7 +138,13 @@ describe("Escrow State", function() {
     // const beforeCloseSellerBalance = await provider.getBalance(seller.address);
     // console.log(ethers.utils.formatEther(beforeCloseSellerBalance));
 
+    // With event listener, it takes a little bit more time to test.
+
     await escrow.close();
+
+    let event = await closedEvent;
+    console.log("Closed");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
 
     // Why they are not modified here?
     
@@ -94,6 +202,10 @@ describe("Escrow State", function() {
 
     // Only seller can call this.
     await escrow.end();
+
+    let event = await endEvent;
+    console.log("End");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
   });
 
   // A visitor who first sees the contract to firstBuyer
@@ -110,7 +222,12 @@ describe("Escrow State", function() {
     // How to set msg.sender for ether js?
     // Use connect method
     await escrow.connect(firstBuyer).confirmPurchase({ value: ethers.utils.parseEther("2.0") })
-    
+
+    let event = await confirmPurchaseEvent;
+    console.log("ConfirmPurchase");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
+    expect(await event.by).to.equal(firstBuyer.address);
+
     expect(await escrow.buyer()).to.equal(firstBuyer.address);
     expect(await escrow.state()).to.equal(1); // Locked
 
@@ -141,9 +258,18 @@ describe("Escrow State", function() {
 
     await escrow.connect(firstBuyer).confirmReceived();
 
+    let event = await confirmReceivedEvent;
+    console.log("ConfirmReceived");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
+    expect(await event.by).to.equal(firstBuyer.address);
+    
     expect(await escrow.state()).to.equal(2); // Released
 
     await escrow.refundSeller();
+
+    event = await sellerRefundedEvent;
+    console.log("SellerRefunded");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
     
     expect(await escrow.state()).to.equal(4); // Complete
     expect(await escrow.totalSales()).to.equal(1); // Complete

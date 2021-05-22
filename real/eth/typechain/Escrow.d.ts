@@ -97,17 +97,17 @@ interface EscrowInterface extends ethers.utils.Interface {
 
   events: {
     "Closed(uint256)": EventFragment;
+    "ConfirmPurchase(uint256,address)": EventFragment;
+    "ConfirmReceived(uint256,address)": EventFragment;
     "End(uint256)": EventFragment;
-    "ItemReceived(uint256,address)": EventFragment;
-    "PurchaseConfirmed(uint256,address)": EventFragment;
     "Restarted(uint256)": EventFragment;
     "SellerRefunded(uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Closed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ConfirmPurchase"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ConfirmReceived"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "End"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ItemReceived"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "PurchaseConfirmed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Restarted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SellerRefunded"): EventFragment;
 }
@@ -358,17 +358,17 @@ export class Escrow extends Contract {
   filters: {
     Closed(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 
+    ConfirmPurchase(
+      when: null,
+      by: null
+    ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
+
+    ConfirmReceived(
+      when: null,
+      by: null
+    ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
+
     End(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
-
-    ItemReceived(
-      when: null,
-      by: null
-    ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
-
-    PurchaseConfirmed(
-      when: null,
-      by: null
-    ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
 
     Restarted(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 

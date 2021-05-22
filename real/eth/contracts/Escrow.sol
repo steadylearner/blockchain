@@ -87,11 +87,11 @@ contract Escrow {
         uint256 when
     );
 
-    event PurchaseConfirmed(
+    event ConfirmPurchase(
         uint256 when,
         address by
     );
-    event ItemReceived(
+    event ConfirmReceived(
         uint256 when,
         address by
     );
@@ -165,7 +165,7 @@ contract Escrow {
         buyer = payable(msg.sender);
         state = State.Locked;
 
-        emit PurchaseConfirmed(
+        emit ConfirmPurchase(
             block.timestamp,
             buyer
         );
@@ -184,7 +184,7 @@ contract Escrow {
         state = State.Release;
 
         buyer.transfer(price); // Buyer receive 1 x value here
-        emit ItemReceived(
+        emit ConfirmReceived(
             block.timestamp,
             buyer
         );
@@ -260,6 +260,7 @@ contract Escrow {
             // Transactions will do nothing, but you still have to pay the transaction fee. You can even transfer ether. It will be locked forever or until someone finds one of the private keys associated with that address.
             // emit End(); // Will this work?
 
+            // This doesn't work
             // emit End(
             //     block.timestamp
             // );
