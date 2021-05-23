@@ -26,6 +26,11 @@ import 'semantic-ui-css/semantic.min.css';
 
 import Escrow from './artifacts/contracts/Escrow.sol/Escrow.json'
 
+import {
+  humanReadableEscrowState,
+  humanReadableUnixTimestamp,
+} from "./formatters";
+
 import ContractDetails from "./components/ContractDetails";
 import Balance from "./components/Balance";
 
@@ -41,26 +46,26 @@ const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
 
-const humanReadableUnixTimestamp = (timestampInt) => {
-  return new Date(timestampInt * 1000);
-}
+// const humanReadableUnixTimestamp = (timestampInt) => {
+//   return new Date(timestampInt * 1000);
+// }
 
-const humanReadableEscrowState = (escrowState) => {
-  if (escrowState === 0) {
-    return "Sale";
-  } else if (escrowState === 1) {
-    return "Locked";
-  } else if (escrowState === 2) {
-    return "Release";
-  } else if (escrowState === 3) {
-    return "Closed";
-  } else if (escrowState === 4) {
-    return "Complete";
-  }
-  // else if (state === 5) {
-  //   return "End";
-  // }
-}
+// const humanReadableEscrowState = (escrowState) => {
+//   if (escrowState === 0) {
+//     return "Sale";
+//   } else if (escrowState === 1) {
+//     return "Locked";
+//   } else if (escrowState === 2) {
+//     return "Release";
+//   } else if (escrowState === 3) {
+//     return "Closed";
+//   } else if (escrowState === 4) {
+//     return "Complete";
+//   }
+//   // else if (state === 5) {
+//   //   return "End";
+//   // }
+// }
 
 // Show metamask for users to decide if they will pay or not
 async function requestAccount() {
@@ -114,7 +119,7 @@ function App() {
   // Use object instead?
   const [user, setUser] = useState();
   const [userBalance, setUserBalance] = useState();
-  
+
   const [role, setRole] = useState();
 
   useEffect(() => {
@@ -260,7 +265,7 @@ function App() {
         contract.on("End", async () => {
           // This doesn't work
           // event.removeListener();
-          
+
           setContractEnd(false);
           // setEscrow({
           //   ...escrow,
@@ -275,7 +280,7 @@ function App() {
         //   // const contractSeller = await contract.seller();
         //   // const contractSellerBalance = await provider.getBalance(seller);
         //   // setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
-          
+
         //   setEscrow({
         //     ...escrow,
         //     state: "Closed",
@@ -432,7 +437,7 @@ function App() {
   }
 
   async function refund() {
-    if (!escrow.state) return
+    if (!escrow.state || escrow.state !== "Release") return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -450,6 +455,7 @@ function App() {
 
   async function restart() {
     if (!escrow.state) return
+    // if (!escrow.state || escrow.state !== "Closed" || escrow.state !== "Complete" ) return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -467,6 +473,7 @@ function App() {
 
   async function end() {
     if (!escrow.state) return
+    // if (!escrow.state || escrow.state !== "Closed" || escrow.state !== "Complete") return
 
     if (typeof window.ethereum !== 'undefined') {
       await requestAccount()
@@ -492,7 +499,7 @@ function App() {
 
   if (!escrow.state) {
     return null;
-  } 
+  }
 
   // if (loading) {
   //   return <div style={{
@@ -507,7 +514,7 @@ function App() {
   //   </div>
   // }
 
-  const contextRef = createRef();
+  // const contextRef = createRef();
 
   let balance;
   if (role === "seller") {
@@ -519,15 +526,15 @@ function App() {
   }
 
   return (
-    <div context={contextRef} >
-      <Sticky context={contextRef}>
+    <div>
+      <Sticky >
         <Balance
           balance={balance}
-          // setAccountAddress={setAccountAddress} 
+        // setAccountAddress={setAccountAddress} 
         />
       </Sticky>
       <div style={{
-        borderTop: "1px solid black",
+        // borderTop: "1px solid black",
         margin: "0 auto",
         display: "flex",
         flexFlow: "column",
@@ -539,7 +546,7 @@ function App() {
           escrowState={escrow.state}
           price={escrow.price}
           balance={escrow.balance}
-          // lastEdited={lastEdited}
+        // lastEdited={lastEdited}
         />
 
         <br />
@@ -567,7 +574,7 @@ function App() {
           borderRadius: "0.5rem",
           padding: "0.5rem 1rem 1rem 1rem",
         }} >
-          {role === "seller" && <Seller 
+          {role === "seller" && <Seller
             address={seller}
             buyer={buyer}
             // balance={sellerBalance}
@@ -592,7 +599,7 @@ function App() {
 
           {/* Visitor to buyer with event listener and set state */}
 
-          {role === "buyer" && <Buyer 
+          {role === "buyer" && <Buyer
             address={buyer}
             seller={seller}
             // balance={buyerBalance}

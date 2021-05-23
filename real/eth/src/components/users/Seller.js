@@ -17,6 +17,8 @@ const Seller = ({
         width: "100%"
     };;
 
+    // alert(buyer);
+
     return (
         <>
             <div style={{
@@ -28,7 +30,7 @@ const Seller = ({
             </div>
 
             <p>Your wallet is <b>{address}.</b></p>
-            {buyer !== "0x0000000000000000000000000000000000000000" && <p>The buyer is <b>{buyer}.</b></p>}
+            {buyer && buyer !== "0x0000000000000000000000000000000000000000" && <p>The buyer is <b>{buyer}.</b></p>}
             {/* <p>Your balance is <b>{balance} ETH.</b></p> */}
 
             {escrowState === "Sale" && <p>"You need to have a buyer to sell this first."</p>}
@@ -43,8 +45,8 @@ const Seller = ({
                 
                 {escrowState === "Locked" && <p>"Send the car to the client and wait for confirmation of your client before you receive the money."</p>}
                 {escrowState === "Release" && <Button style={fullWidth} onClick={refund} color="primary" variant="contained">I want to receive money from what I sold </Button>}
+                
                 {(escrowState === "Closed" || escrowState === "Complete") && <Button style={fullWidth} onClick={restart} color="primary" variant="contained">I want to sell a car again</Button>}
-
                 {(escrowState === "Closed" || escrowState === "Complete") && <Button style={{
                     marginTop: "1rem",
                     ...fullWidth,

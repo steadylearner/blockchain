@@ -20,13 +20,14 @@ export default function PreviousBuyers ({
               <strong>Address</strong>
             </Table.Cell>
           </Table.Row>
-          {previousBuyers.map(account =>
-            <Table.Row key={account}>
+          {previousBuyers.map((account, index) =>
+            <Table.Row key={`${account}${index}`} >
               <Table.Cell width={3}>
                 <div style={{
                   display: "flex",
                 }}>
-                  <span style={{ display: 'inline-block', minWidth: '10rem' }}>
+                  <span style={{ display: 'flex', alignItems: "center", minWidth: '10rem' }}>
+                  {/* <span style={{ display: 'inline-block', minWidth: '10rem' }}> */}
                     {account}
                   </span>
                   {/* https://etherscan.io */}

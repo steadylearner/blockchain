@@ -20,11 +20,15 @@ function Balance ({
         backgroundColor: '#fff',
         borderColor: '#fff',
         paddingTop: '1em',
-        paddingBottom: '1em'
+        paddingBottom: '1em',
+        
+        borderBottom: "1px solid black",
       }}
     >
       <Container>
-        <Menu.Menu>
+        <Menu.Menu style={{
+          display: "flex",
+        }}>
             <a
               style={{
                 display: "flex",
@@ -36,7 +40,7 @@ function Balance ({
               target="_blank"
               rel='noopener noreferrer'
             >
-              <Image src={`https://avatars.githubusercontent.com/u/32325099?v=4`} size={"mini"} />
+              <Image alt="steadylearner github" src={`https://avatars.githubusercontent.com/u/32325099?v=4`} size={"mini"} />
               <span style={{
                 fontWeight: "bold",
                 marginLeft: "0.5rem",
