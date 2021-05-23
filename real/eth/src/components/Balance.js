@@ -9,8 +9,6 @@ import {
   Label
 } from 'semantic-ui-react';
 
-// import { useSubstrate } from './substrate-lib';
-
 function Balance ({
   balance
 }) {

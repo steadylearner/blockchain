@@ -3,7 +3,8 @@ import Button from '@material-ui/core/Button';
 
 const Seller = ({
     address,
-    balance,
+    // balance,
+    buyer,
 
     escrowState,
 
@@ -27,6 +28,7 @@ const Seller = ({
             </div>
 
             <p>Your wallet is <b>{address}.</b></p>
+            {buyer !== "0x0000000000000000000000000000000000000000" && <p>The buyer is <b>{buyer}.</b></p>}
             {/* <p>Your balance is <b>{balance} ETH.</b></p> */}
 
             {escrowState === "Sale" && <p>"You need to have a buyer to sell this first."</p>}

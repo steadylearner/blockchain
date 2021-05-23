@@ -74,8 +74,7 @@ async function requestAccount() {
   }
 }
 
-// 1. Commands to develope better,
-// 2. Use context and separate logic(components and functions),
+// 1. Use context and separate logic(components and functions),
 
 // Improve CSS with semantic-ui-react?
 // https://github.com/substrate-developer-hub/substrate-front-end-template
@@ -535,6 +534,7 @@ function App() {
         alignItems: "center"
       }}>
         <ContractDetails
+          address={contract.address}
           sales={escrow.previousBuyers.length}
           escrowState={escrow.state}
           price={escrow.price}
@@ -560,7 +560,7 @@ function App() {
           // marginTop: "1rem",
           // marginLeft: "1rem",
 
-          maxWidth: "28rem",
+          width: "28rem",
           marginBottom: "1.5rem",
 
           border: "1px solid black",
@@ -569,7 +569,8 @@ function App() {
         }} >
           {role === "seller" && <Seller 
             address={seller}
-            balance={sellerBalance}
+            buyer={buyer}
+            // balance={sellerBalance}
 
             escrowState={escrow.state}
             close={close}
@@ -581,18 +582,20 @@ function App() {
 
           {role === "visitor" && <Visitor
             address={user}
-            balance={userBalance}
+            seller={seller}
+            // balance={userBalance}
 
             escrowState={escrow.state}
 
             purchase={purchase}
           />}
 
-          {/* Visitor to buyer with event listner and set state */}
+          {/* Visitor to buyer with event listener and set state */}
 
           {role === "buyer" && <Buyer 
             address={buyer}
-            balance={buyerBalance}
+            seller={seller}
+            // balance={buyerBalance}
 
             escrowState={escrow.state}
 

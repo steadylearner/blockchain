@@ -4,11 +4,12 @@
 import React from "react";
 
 const ContractDetails = ({
+    address,
     sales,
     balance,
     price,
     escrowState,
-    lastEdited,
+    // lastEdited,
 }) => {
     return (
         <div style={{
@@ -26,8 +27,10 @@ const ContractDetails = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                flexFlow: "column",
             }}>
-                <h1>Car Escrow Contract</h1>
+                {/* <h1>Car Escrow Contract</h1> */}
+                <h1>Buy a car with {price} ETH</h1>
             </div>
             
             <div style={{
@@ -44,12 +47,14 @@ const ContractDetails = ({
                 />
             </div>
             
+            <p>The contract:</p>
+            <p><b>{address}</b></p>
             <p>Total sales: <b>{sales}</b></p>
             {/* {lastEdited && <p>Last edited: {lastEdited}</p>} */}
             <p>The current state of this escrow contract is <b>{escrowState}</b>.</p>
             <p>The current balance of this escrow contract is <b>{balance} ETH</b>.</p>
 
-            <p>The price for this contract is <b>{price} ETH.</b></p>
+            {/* <p>The price for this contract is <b>{price} ETH.</b></p> */}
         </div>
     );
 }

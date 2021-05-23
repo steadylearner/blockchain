@@ -7,9 +7,12 @@ export default function PreviousBuyers ({
     previousBuyers
 }) {
   return (
+    // https://etherscan.io
     // <Grid.Column>
     <>
-      <h1>Previous Buyers</h1>
+      <h1 style={{
+        textAlign: "center",
+      }}>Previous Buyers</h1>
       <Table celled striped size='small'>
         <Table.Body>
           <Table.Row>
@@ -26,6 +29,7 @@ export default function PreviousBuyers ({
                   <span style={{ display: 'inline-block', minWidth: '10rem' }}>
                     {account}
                   </span>
+                  {/* https://etherscan.io */}
                   <CopyToClipboard text={account}>
                     <Button
                       style={{
