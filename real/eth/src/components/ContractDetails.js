@@ -16,7 +16,7 @@ const ContractDetails = ({
             marginTop: "1.5rem",
             // marginLeft: "1rem",
             
-            minWidth: "28rem",
+            width: "28rem",
             maxHeight: "28rem",
 
             border: "1px solid black",

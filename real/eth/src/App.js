@@ -548,7 +548,7 @@ function App() {
           // marginTop: "1rem",
           // marginLeft: "1rem",
 
-          minWidth: "28rem",
+          width: "28rem",
           marginBottom: "1.5rem",
 
           border: "1px solid black",
