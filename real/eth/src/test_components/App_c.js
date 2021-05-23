@@ -2,8 +2,6 @@
 // https://github.com/ethjs/examples
 // https://docs.openzeppelin.com/learn/developing-smart-contracts
 
-// Should make UI for visitor, seller and buyer
-
 // 1. Make escrow with custom price and item information
 // 2. Separate UI for seller and visitor (No buyer at the moment), seller can 
 // 3. When user buy the product, separate UI for seller and buyer, increase total buyers
@@ -11,143 +9,350 @@
 // 5. Buyer can restart the contract with new information?
 // all again until buyer end the contract
 
-// 1. Include event listener to refresh the page.
-// 2. Include tests for Solidity
+// 1. Include the link to show previousPurchases
+// 2. Organize the app. Use context and separate components?
 
-// 3. Find how to configure item?
+// import './App.css';
+import { useEffect, useState, createRef } from 'react';
+import { Contract, ethers } from 'ethers'
 
-import { useEffect, useState } from 'react';
+import moment from "moment";
 
-import { makeStyles } from '@material-ui/core/styles';
+// import CircularProgress from '@material-ui/core/CircularProgress';
 
-// import Avatar from '@material-ui/core/Avatar'; // Seller or Buyer should use this
-// import AccountCircle from '@material-ui/icons/AccountCircle'; // Visitor should use this
+// import Button from '@material-ui/core/Button';
 
-// import MonetizationOnIcon from '@material-ui/icons/MonetizationOn';
+// import { Container, Dimmer, Loader, Grid, Sticky, Message } from 'semantic-ui-react';
+import 'semantic-ui-css/semantic.min.css';
 
-import { ethers } from 'ethers'
 import Escrow from './artifacts/contracts/Escrow.sol/Escrow.json'
 
 import ContractDetails from "./components/ContractDetails";
 
-import Seller from "./components/Seller";
-
-import Visitor from "./components/Visitor";
-import Buyer from "./components/Buyer";
+import Seller from "./components/users/Seller";
+import Visitor from "./components/users/Visitor";
+import Buyer from "./components/users/Buyer";
 
 // localhost
 const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    '& > *': {
-      margin: theme.spacing(1),
-    },
-  },
-}));
-
-// Include to context?
+// Move this to context?
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
-// contract.on window.location.reload();
 
-// Show metamask for users to decide if they will pay or not
-async function requestAccount() {
-  try {
-    await window.ethereum.request({ method: 'eth_requestAccounts' });
-  } catch(error) {
-    console.log("error");
-    console.error(error);
-
-    alert("Login to Metamask first");
-  }  
+const humanReadableUnixTimestamp = (timestampInt) => {
+  return new Date(timestampInt * 1000);
 }
 
-const humanReadableEscrowState = (state) => {
-  if (state === 0) {
+const humanReadableEscrowState = (escrowState) => {
+  if (escrowState === 0) {
     return "Sale";
-  } else if (state === 1) {
+  } else if (escrowState === 1) {
     return "Locked";
-  } else if (state === 2) {
+  } else if (escrowState === 2) {
     return "Release";
-  } else if (state === 3) {
-    return "Close";
-  } else if (state === 4) {
+  } else if (escrowState === 3) {
+    return "Closed";
+  } else if (escrowState === 4) {
     return "Complete";
-  } 
+  }
   // else if (state === 5) {
   //   return "End";
   // }
 }
 
-// Should listen to abort event
+// Show metamask for users to decide if they will pay or not
+async function requestAccount() {
+  try {
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+  } catch (error) {
+    console.log("error");
+    console.error(error);
+
+    alert("Login to Metamask first");
+  }
+}
+
+// 1. show previousBuyers with table?, Commands to develope better,
+// 2. include users to social medias and copyright with steadylearner to help me find a job.
+// Use context and separate logic(components and functions),
+
+// Improve CSS with semantic-ui-react?
+// https://github.com/substrate-developer-hub/substrate-front-end-template
 function App() {
-  // Include this.
-  // const contractBalance = await provider.getBalance(contract.address);
-  // setEscrowBalance(contractBalance);
-  // alert(`Current contract balance is ${ethers.utils.formatEther(contractBalance)} ETH`);
+  // contract.on window.location.reload();
 
-  // Include to context?
-  const [escrowBalance, setEscrowBalance] = useState();
-  const [escrowState, setEscrowState] = useState();
-  const [escrowSales, setEscrowSales] = useState();
-  // const [contractState, setContractState] = useState();
+  // Use object instead?
 
-  const [price, setPrice] = useState();
-  // // const [balance, setBalance] = useState();
-  // // Should find how to get contract balance also.
+  // const [lastEdited, setLastEdited] = useState();
 
+  // const [loading, setLoading] = useState(false);
+
+  const [contractEnd, setContractEnd] = useState(true);
+
+  const [escrow, setEscrow] = useState({
+    state: null,
+    balance: 0,
+    price: 1, // 1 ETH by default
+    sales: 0,
+    previousBuyers: [],
+  });
+
+  // const [escrowState, setEscrowState] = useState();
+  // const [escrowBalance, setEscrowBalance] = useState();
+  // const [escrowPrice, setEscrowPrice] = useState();
+  // const [escrowSales, setEscrowSales] = useState();
+  // const [escrowPreviousBuyers, setEscrowPreviousBuyers] = useState();
+
+  // Use object instead?
   const [seller, setSeller] = useState();
-  // const [sellerBalance, setSellerBalance] = useState();
-  const [buyer, setBuyer] = useState();
-  // const [buyerBalance, setBuyerBalance] = useState();
+  const [sellerBalance, setSellerBalance] = useState();
 
+  // Use object instead?
+  const [buyer, setBuyer] = useState();
+  const [buyerBalance, setBuyerBalance] = useState();
+
+  // Use object instead?
   const [user, setUser] = useState();
-  // const [userBalance, setUserBalance] = useState(); 
+  const [userBalance, setUserBalance] = useState();
+  
+  const [role, setRole] = useState();
 
   useEffect(() => {
     async function fetchData() {
 
       try {
+        // Contract Events
+
+        contract.on("Closed", async (when, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          // const contractState = await contract.showState();
+
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState), // Easier
+            // state: await contractState.toString(),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          const contractSeller = await contract.seller();
+          const contractSellerBalance = await provider.getBalance(contractSeller);
+          setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+
+          // console.log("when");
+          // console.log(when);
+          // console.log(humanReadableUnixTimestamp(when));
+          console.log("Event - Closed");
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("ConfirmPurchase", async (when, by, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          setBuyer(by);
+          const contractBuyerBalance = await provider.getBalance(by);
+          setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance));
+
+          setRole("buyer");
+          console.log("This visitor became the buyer of this contract");
+
+          // console.log("when");
+          // console.log(when);
+          // console.log(humanReadableUnixTimestamp(when));
+          console.log("Event - ConfirmPurchase");
+          console.log(`By - ${by}`);
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("ConfirmReceived", async (when, by, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+          console.log(previousBuyers);
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          setBuyer(by);
+          const contractBuyerBalance = await provider.getBalance(by);
+          setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance));
+
+          console.log("Event - ConfirmReceived");
+          console.log(`By - ${by}`);
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("SellerRefunded", async (when, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+
+          const previousBuyers = await contract.listPreviousBuyers();
+          console.log(previousBuyers);
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+
+          const contractSeller = await contract.seller();
+          const contractSellerBalance = await provider.getBalance(contractSeller);
+          setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+
+          console.log("Event - SellerRefunded");
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("Restarted", async (when, event) => {
+          event.removeListener();
+
+          const contractState = await contract.state();
+          const contractBalance = await provider.getBalance(contract.address);
+          const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            balance: ethers.utils.formatEther(contractBalance.toString()),
+            previousBuyers,
+          })
+          const contractSeller = await contract.seller();
+          const contractSellerBalance = await provider.getBalance(contractSeller);
+          setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+
+          setBuyer();
+          setBuyerBalance();
+
+          console.log("Event - Restarted");
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("End", async () => {
+          // This doesn't work
+          // event.removeListener();
+          
+          setContractEnd(false);
+          // setEscrow({
+          //   ...escrow,
+          //   state: null,
+          // })
+        });
+
+        // contract.on("Restarted", async (when) => {
+        //   const contractBalance = await provider.getBalance(contract.address);
+        //   const contractBalance = await provider.getBalance(contract.address);
+
+        //   // const contractSeller = await contract.seller();
+        //   // const contractSellerBalance = await provider.getBalance(seller);
+        //   // setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+          
+        //   setEscrow({
+        //     ...escrow,
+        //     state: "Closed",
+        //     balance: ethers.utils.formatEther(contractBalance.toString()),
+        //   })
+
+        //   // console.log("when");
+        //   // console.log(when);
+        //   // console.log(humanReadableUnixTimestamp(when));
+        //   console.log("Closed");
+        //   console.log(moment(humanReadableUnixTimestamp(when)).fromNow())
+
+        //   // setLastEdited(moment(humanReadableUnixTimestamp(when)).fromNow());
+
+        //   // setEscrowState("Closed");
+        //   // setEscrowBalance(0);
+        // });
+
+        // Contract State
+        const contractState = await contract.state()
         const contractBalance = await provider.getBalance(contract.address);
-        setEscrowBalance(ethers.utils.formatEther(contractBalance));
-
-        const contractSales = await contract.sales();
-        setEscrowSales(contractSales.toString());
-
-        // const state = await contract.state()
-        // setEscrowState(humanReadableEscrowState(state));
-
-        // // Should find how to get contract balance also.
         const contractPrice = await contract.price()
-        alert(contractPrice);
-        setPrice(ethers.utils.formatEther(contractPrice));
+        // const contractSales = await contract.totalSales();
+        const contractPreviousBuyers = await contract.listPreviousBuyers();
+        // console.log(contractPreviousBuyers);
+
+        setEscrow({
+          state: humanReadableEscrowState(contractState),
+          balance: ethers.utils.formatEther(contractBalance.toString()),
+          price: ethers.utils.formatEther(contractPrice.toString()),
+          // sales: contractSales.toString(),
+          previousBuyers: contractPreviousBuyers,
+        })
+
+        // state: humanReadableEscrowState(contractState),
+        // balance: contractBalance.toString(),
+        // price: ethers.utils.formatEther(contractPrice.toString()),
+        // sales: contractSales,
+        // previousBuyers: contractPreviousBuyers,
+
+        // const contractState = await contract.state()
+        // setEscrowState(humanReadableEscrowState(contractState));
+        // const contractBalance = await provider.getBalance(contract.address);
+        // setEscrowBalance(ethers.utils.formatEther(contractBalance));
+        // const contractPrice = await contract.price()
+        // setEscrowPrice(ethers.utils.formatEther(contractPrice));
+        // const contractSales = await contract.totalSales();
+        // setEscrowSales(contractSales.toString());
+        // const contractPreviousBuyers = await contract.listPreviousBuyers();
+        // setEscrowPreviousBuyers(contractPreviousBuyers);
+        // console.log(contractPreviousBuyers);
 
         const contractSeller = await contract.seller();
-        // setSeller(contractSeller);
-
-        // const contractSellerBalance = await provider.getBalance(contractSeller);
-        // setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
+        setSeller(contractSeller);
+        const contractSellerBalance = await provider.getBalance(contractSeller);
+        setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
 
         const contractBuyer = await contract.buyer()
-        // setBuyer(contractBuyer);
+        setBuyer(contractBuyer);
+        const contractBuyerBalance = await provider.getBalance(contractBuyer);
+        setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance)); // Should make this part work again.
 
-        // const contractBuyerBalance = await provider.getBalance(contractBuyer);
-        // setBuyerBalance(ethers.utils.formatEther(contractBuyerBalance));
-
-        // // https://docs.ethers.io/v5/single-page/#/v5/getting-started/-%23-getting-started--history
         const signer = provider.getSigner(); // user
-        // // console.log(signer);
 
-        // // setUser(await signer.getAddress());
         const contractUser = await signer.getAddress();
-        // // alert("contractUser");
-        // // alert(contractUser);
-        setUser(contractUser); // Should make this part work again.
+        setUser(contractUser);
+        const contractUserBalance = await provider.getBalance(contractUser);
+        setUserBalance(ethers.utils.formatEther(contractUserBalance));
 
-        // const contractUserBalance = await provider.getBalance(contractUser);
-        // setUserBalance(ethers.utils.formatEther(contractUserBalance));
-
+        if (contractUser === contractSeller) {
+          setRole("seller");
+        } else if (contractUser === contractBuyer) {
+          setRole("buyer");
+        } else {
+          setRole("visitor");
+        }
       } catch (error) {
         console.log("error");
         console.error(error);
@@ -157,223 +362,215 @@ function App() {
     fetchData();
   }, []);
 
-  // async function close() {
-  //   if (!escrowState || escrowState !== "Sale") {
-  //     return;
-  //   }
+  // Use context to save Contract and Provider and sperad these functions to each components that need them.
 
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     await requestAccount()
+  async function close() {
+    if (!escrow.state || escrow.state !== "Sale") {
+      return;
+    }
 
-  //     const signer = provider.getSigner(); // Your current metamask account;
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
 
-  //     // console.log("signer");
-  //     // console.log(signer);
+      const signer = provider.getSigner(); // Your current metamask account;
 
-  //     const forClose = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+      // console.log("signer");
+      // console.log(signer);
 
-  //     // contract.on("Aborted", () => {
-  //     //   alert("Aborted");
-  //     // })
+      const forClose = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
 
-  //     const transaction = await forClose.close();
-  //     await transaction.wait();
-  //   }
-  // }
+      // contract.on("Aborted", () => {
+      //   alert("Aborted");
+      // })
 
-  // // Visitor
-  // async function purchase() {
-  //   if (!escrowState || escrowState !== "Sale") {
-  //     return;
-  //   }
+      const transaction = await forClose.close();
+      await transaction.wait();
+    }
+  }
 
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     await requestAccount()
+  // Visitor
+  async function purchase() {
+    if (!escrow.state || escrow.state !== "Sale") {
+      return;
+    }
 
-  //     const signer = provider.getSigner(); // Your current metamask account;
-  //     const forPurchase = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
 
-  //     // contract.on("PurchaseConfirmed", () => {
-  //     //   alert("PurchaseConfirmed");
-  //     // })
+      const signer = provider.getSigner(); // Your current metamask account;
+      const forPurchase = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
 
-  //     const transaction = await forPurchase.confirmPurchase({ value: ethers.utils.parseEther("2.0") });
-  //     await transaction.wait();
-  //   }
-  // }
+      // contract.on("PurchaseConfirmed", () => {
+      //   alert("PurchaseConfirmed");
+      // })
 
-  // async function receive() {
-  //   if (!escrowState || escrowState !== "Locked") {
-  //     return;
-  //   }
+      const transaction = await forPurchase.confirmPurchase({ value: ethers.utils.parseEther("2.0") });
+      await transaction.wait();
+    }
+  }
 
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     await requestAccount()
+  async function receive() {
+    if (!escrow.state || escrow.state !== "Locked") {
+      return;
+    }
 
-  //     const signer = provider.getSigner(); // Your current metamask account;
-  //     const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
 
-  //     // contract.on("PurchaseConfirmed", () => {
-  //     //   alert("PurchaseConfirmed");
-  //     // })
+      const signer = provider.getSigner(); // Your current metamask account;
+      const contract = new ethers.Contract(escrowAddress, Escrow.abi, signer);
 
-  //     const transaction = await contract.confirmReceived();
-  //     await transaction.wait();
+      // contract.on("PurchaseConfirmed", () => {
+      //   alert("PurchaseConfirmed");
+      // })
 
-  //     // call currentEscrowState here and it will show you inactive at the screen
-  //     // fetchGreeting()
-  //   }
-  // }
+      const transaction = await contract.confirmReceived();
+      await transaction.wait();
 
-  // async function refund() {
-  //   if (!escrowState) return
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
 
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     await requestAccount()
+  async function refund() {
+    if (!escrow.state) return
 
-  //     const signer = provider.getSigner(); // Your current metamask account;
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
 
-  //     const forRefund = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-  //     const transaction = await forRefund.refundSeller();
-  //     await transaction.wait();
+      const signer = provider.getSigner(); // Your current metamask account;
 
-  //     // call currentEscrowState here and it will show you inactive at the screen
-  //     // fetchGreeting()
-  //   }
-  // }
+      const forRefund = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forRefund.refundSeller();
+      await transaction.wait();
 
-  // async function restart() {
-  //   if (!escrowState) return
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
 
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     await requestAccount()
+  async function restart() {
+    if (!escrow.state) return
 
-  //     const signer = provider.getSigner(); // Your current metamask account;
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
 
-  //     const forRestart = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-  //     const transaction = await forRestart.restartContract({ value: ethers.utils.parseEther("2.0") });
-  //     await transaction.wait();
+      const signer = provider.getSigner(); // Your current metamask account;
 
-  //     // call currentEscrowState here and it will show you inactive at the screen
-  //     // fetchGreeting()
-  //   }
-  // }
+      const forRestart = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forRestart.restartContract({ value: ethers.utils.parseEther("2.0") });
+      await transaction.wait();
 
-  // async function end() {
-  //   if (!escrowState) return
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
 
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     await requestAccount()
+  async function end() {
+    if (!escrow.state) return
 
-  //     const signer = provider.getSigner(); // Your current metamask account;
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
 
-  //     const forEnd = new ethers.Contract(escrowAddress, Escrow.abi, signer);
-  //     const transaction = await forEnd.end();
-  //     await transaction.wait();
+      const signer = provider.getSigner(); // Your current metamask account;
 
-  //     // call currentEscrowState here and it will show you inactive at the screen
-  //     // fetchGreeting()
-  //   }
-  // }
+      const forEnd = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forEnd.end();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
 
   // alert(escrowState);
+  // alert(role);
 
-  // const classes = useStyles();
+  // End event
+  if (!contractEnd) {
+    return null;
+  }
 
-  // user === null? no metamask?
-  // if (!user) {
-  //   // return null;
-  //   return <p>
-  //     Include any signer such as Metamask.
-  //   </p>;
+  if (!escrow.state) {
+    return null;
+  } 
+
+  // if (loading) {
+  //   return <div style={{
+  //     width: "100vw",
+  //     height: "100vh",
+
+  //     display: "flex",
+  //     alignItems: "center",
+  //     justifyContent: "center",
+  //   }}>
+  //     <CircularProgress />
+  //   </div>
   // }
 
-  // Include role?
+  const contextRef = createRef();
 
-  // Seller.js
-  if (user === seller) {
-    return (<div>
-      <ContractDetails 
-        sales={escrowSales}
-        state={escrowState}
-        price={price}
-        balance={escrowBalance}
-      />
-
-      <br />
-
-      {/* <Seller 
-        address={seller}
-        balance={sellerBalance}
-
-        state={escrowState}
-
-        close={close}
-        refund={refund}
-        
-        restart={restart}
-        end={end}
-      /> */}
-
-    </div>);
-  }
-
-  // Buyer.js
-  if (user === buyer) {
-    return (<div>
+  return (
+    <div style={{
+      margin: "1rem auto",
+      display: "flex",
+      flexFlow: "column",
+      alignItems: "center"
+    }}>
       <ContractDetails
-        sales={escrowSales}
-        state={escrowState}
-        price={price}
-        balance={escrowBalance}
+        sales={escrow.previousBuyers.length}
+        escrowState={escrow.state}
+        price={escrow.price}
+        balance={escrow.balance}
+        // lastEdited={lastEdited}
       />
 
       <br />
 
-      {/* <Buyer
-        address={seller}
-        balance={buyerBalance}
+      {role && <div style={{
+        // marginTop: "1rem",
+        marginLeft: "1rem",
 
-        state={escrowState}
+        maxWidth: "28rem",
 
-        receive={receive}
-      /> */}
-    </div>);
-  }
+        border: "1px solid black",
+        borderRadius: "0.5rem",
+        padding: "0.5rem 1rem 1rem 1rem",
+      }} >
+        {role === "seller" && <Seller 
+          address={seller}
+          balance={sellerBalance}
 
-  // Visitor.js
-  return (<div>
-    <ContractDetails
-      sales={escrowSales}
-      state={escrowState}
-      price={price}
-      balance={escrowBalance}
-    />
+          escrowState={escrow.state}
+          close={close}
+          refund={refund}
 
-    <br />
+          restart={restart}
+          end={end}
+        />}
 
-   {/* <Visitor 
-      address={seller}
-      balance={userBalance}
+        {role === "visitor" && <Visitor
+          address={user}
+          balance={userBalance}
 
-      state={escrowState}
+          escrowState={escrow.state}
 
-      purchase={purchase}
-   /> */}
-    
-    {/* Include purchase button to use here */}
-  </div>);
+          purchase={purchase}
+        />}
+
+        {/* Visitor to buyer with event listner and set state */}
+
+        {role === "buyer" && <Buyer 
+          address={buyer}
+          balance={buyerBalance}
+
+          escrowState={escrow.state}
+
+          receive={receive}
+        />}
+      </div>}
+    </div>
+  );
 }
 
 export default App;
-
-{/* <Button variant="contained">Default</Button>
-      <Button variant="contained" color="primary">
-    Primary
-      </Button>
-      <Button variant="contained" color="secondary">
-    Secondary
-      </Button>
-      <Button variant="contained" disabled>
-    Disabled
-      </Button> */}

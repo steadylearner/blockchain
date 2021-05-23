@@ -12,8 +12,8 @@ const ContractDetails = ({
 }) => {
     return (
         <div style={{
-            marginTop: "1rem",
-            marginLeft: "1rem",
+            marginTop: "1.5rem",
+            // marginLeft: "1rem",
             
             minWidth: "28rem",
             maxHeight: "28rem",
@@ -37,7 +37,7 @@ const ContractDetails = ({
             }}>
                 <img
                     style={{
-                        maxWidth: "15rem",
+                        maxWidth: "12rem",
                         // maxHeight: "10rem",
                     }}
                     src="/car.jpeg" // Should be image from item later

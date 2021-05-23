@@ -39,6 +39,7 @@ contract Escrow {
     // Description
     // Image
 
+    // uint(vt);
     enum State { Sale, Locked, Release, Closed, Complete } // 0, 1, 2, 3, 4?
     // enum State { Sale, Locked, Release, Closed, Complete, End } // 0, 1, 2, 3, 4, 5?
     
@@ -234,6 +235,11 @@ contract Escrow {
             );
         }
     }
+
+    // function showState() public view returns (uint) {
+    //     // With uint, it returns Enum value instead of index
+    //     return uint(state);
+    // }
 
     function listPreviousBuyers()public view returns(address [] memory){
         return previousBuyers;

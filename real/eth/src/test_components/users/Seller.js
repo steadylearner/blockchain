@@ -27,7 +27,7 @@ const Seller = ({
             </div>
 
             <p>Your wallet is <b>{address}.</b></p>
-            {/* <p>Your balance is <b>{balance} ETH.</b></p> */}
+            <p>Your balance is <b>{balance} ETH.</b></p>
 
             {escrowState === "Sale" && <p>"You need to have a buyer to sell this first."</p>}
 

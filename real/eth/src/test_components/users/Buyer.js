@@ -24,7 +24,7 @@ const Buyer = ({
             </div>
 
             <p>Your wallet is <b>{address}.</b></p>
-            {/* <p>Your balance is <b>{balance} ETH.</b></p> */}
+            <p>Your balance is <b>{balance} ETH.</b></p>
 
             <div style={{
                 display: "flex",
