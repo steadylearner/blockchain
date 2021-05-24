@@ -96,6 +96,10 @@ contract Escrow {
         uint256 when,
         address by
     );
+    
+    event SellerRefundBuyer(
+        uint256 when
+    );
     event SellerRefunded(
         uint256 when
     );
@@ -188,6 +192,23 @@ contract Escrow {
         emit ConfirmReceived(
             block.timestamp,
             buyer
+        );
+    }
+
+    function refundBuyer()
+        public
+        onlySeller
+        inState(State.Locked)
+    {
+        // It is important to change the state first because
+        // otherwise, the contracts called using `send` below
+        // can call in again here.
+        state = State.Sale;
+        buyer.transfer(2 * price); // Buyer receive 2 x value paid before if the seller don't want to sell it.
+        buyer = payable(0);
+        
+        emit SellerRefundBuyer(
+            block.timestamp
         );
     }
 

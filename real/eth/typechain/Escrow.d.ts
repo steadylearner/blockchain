@@ -29,6 +29,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     "end()": FunctionFragment;
     "listPreviousBuyers()": FunctionFragment;
     "price()": FunctionFragment;
+    "refundBuyer()": FunctionFragment;
     "refundSeller()": FunctionFragment;
     "restartContract()": FunctionFragment;
     "seller()": FunctionFragment;
@@ -52,6 +53,10 @@ interface EscrowInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "price", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "refundBuyer",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "refundSeller",
     values?: undefined
@@ -84,6 +89,10 @@ interface EscrowInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "price", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "refundBuyer",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "refundSeller",
     data: BytesLike
   ): Result;
@@ -101,6 +110,7 @@ interface EscrowInterface extends ethers.utils.Interface {
     "ConfirmReceived(uint256,address)": EventFragment;
     "End(uint256)": EventFragment;
     "Restarted(uint256)": EventFragment;
+    "SellerRefundBuyer(uint256)": EventFragment;
     "SellerRefunded(uint256)": EventFragment;
   };
 
@@ -109,6 +119,7 @@ interface EscrowInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "ConfirmReceived"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "End"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Restarted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "SellerRefundBuyer"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SellerRefunded"): EventFragment;
 }
 
@@ -200,6 +211,14 @@ export class Escrow extends Contract {
 
     "price()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    refundBuyer(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "refundBuyer()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -277,6 +296,14 @@ export class Escrow extends Contract {
 
   "price()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+  refundBuyer(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "refundBuyer()"(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   refundSeller(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -334,6 +361,10 @@ export class Escrow extends Contract {
 
     "price()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    refundBuyer(overrides?: CallOverrides): Promise<void>;
+
+    "refundBuyer()"(overrides?: CallOverrides): Promise<void>;
+
     refundSeller(overrides?: CallOverrides): Promise<void>;
 
     "refundSeller()"(overrides?: CallOverrides): Promise<void>;
@@ -371,6 +402,10 @@ export class Escrow extends Contract {
     End(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 
     Restarted(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
+
+    SellerRefundBuyer(
+      when: null
+    ): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 
     SellerRefunded(
       when: null
@@ -421,6 +456,14 @@ export class Escrow extends Contract {
     price(overrides?: CallOverrides): Promise<BigNumber>;
 
     "price()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    refundBuyer(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "refundBuyer()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -499,6 +542,14 @@ export class Escrow extends Contract {
     price(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "price()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    refundBuyer(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "refundBuyer()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     refundSeller(
       overrides?: Overrides & { from?: string | Promise<string> }

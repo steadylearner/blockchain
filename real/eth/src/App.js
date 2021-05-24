@@ -46,27 +46,6 @@ const escrowAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const contract = new ethers.Contract(escrowAddress, Escrow.abi, provider);
 
-// const humanReadableUnixTimestamp = (timestampInt) => {
-//   return new Date(timestampInt * 1000);
-// }
-
-// const humanReadableEscrowState = (escrowState) => {
-//   if (escrowState === 0) {
-//     return "Sale";
-//   } else if (escrowState === 1) {
-//     return "Locked";
-//   } else if (escrowState === 2) {
-//     return "Release";
-//   } else if (escrowState === 3) {
-//     return "Closed";
-//   } else if (escrowState === 4) {
-//     return "Complete";
-//   }
-//   // else if (state === 5) {
-//   //   return "End";
-//   // }
-// }
-
 // Show metamask for users to decide if they will pay or not
 async function requestAccount() {
   try {
@@ -101,12 +80,6 @@ function App() {
     sales: 0,
     previousBuyers: [],
   });
-
-  // const [escrowState, setEscrowState] = useState();
-  // const [escrowBalance, setEscrowBalance] = useState();
-  // const [escrowPrice, setEscrowPrice] = useState();
-  // const [escrowSales, setEscrowSales] = useState();
-  // const [escrowPreviousBuyers, setEscrowPreviousBuyers] = useState();
 
   // Use object instead?
   const [seller, setSeller] = useState();
@@ -183,6 +156,30 @@ function App() {
           // console.log(humanReadableUnixTimestamp(when));
           console.log("Event - ConfirmPurchase");
           console.log(`By - ${by}`);
+          console.log(`State - ${humanReadableEscrowState(contractState)}`);
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+        });
+
+        contract.on("SellerRefundBuyer", async (when, event) => {
+          event.removeListener(); // Solve memory leak with this.
+
+          const contractState = await contract.state();
+          // const contractBalance = await provider.getBalance(contract.address);
+          // const previousBuyers = await contract.listPreviousBuyers();
+
+          setEscrow({
+            ...escrow,
+            state: humanReadableEscrowState(contractState),
+            // balance: ethers.utils.formatEther(contractBalance.toString()),
+            // previousBuyers,
+          })
+
+          console.log("This seller refunded the buyer of this contract");
+
+          // console.log("when");
+          // console.log(when);
+          // console.log(humanReadableUnixTimestamp(when));
+          console.log("Event - SellerRefundBuyer");
           console.log(`State - ${humanReadableEscrowState(contractState)}`);
           console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
         });
@@ -267,37 +264,7 @@ function App() {
           // event.removeListener();
 
           setContractEnd(false);
-          // setEscrow({
-          //   ...escrow,
-          //   state: null,
-          // })
         });
-
-        // contract.on("Restarted", async (when) => {
-        //   const contractBalance = await provider.getBalance(contract.address);
-        //   const contractBalance = await provider.getBalance(contract.address);
-
-        //   // const contractSeller = await contract.seller();
-        //   // const contractSellerBalance = await provider.getBalance(seller);
-        //   // setSellerBalance(ethers.utils.formatEther(contractSellerBalance));
-
-        //   setEscrow({
-        //     ...escrow,
-        //     state: "Closed",
-        //     balance: ethers.utils.formatEther(contractBalance.toString()),
-        //   })
-
-        //   // console.log("when");
-        //   // console.log(when);
-        //   // console.log(humanReadableUnixTimestamp(when));
-        //   console.log("Closed");
-        //   console.log(moment(humanReadableUnixTimestamp(when)).fromNow())
-
-        //   // setLastEdited(moment(humanReadableUnixTimestamp(when)).fromNow());
-
-        //   // setEscrowState("Closed");
-        //   // setEscrowBalance(0);
-        // });
 
         // Contract State
         const contractState = await contract.state()
@@ -314,24 +281,6 @@ function App() {
           // sales: contractSales.toString(),
           previousBuyers: contractPreviousBuyers,
         })
-
-        // state: humanReadableEscrowState(contractState),
-        // balance: contractBalance.toString(),
-        // price: ethers.utils.formatEther(contractPrice.toString()),
-        // sales: contractSales,
-        // previousBuyers: contractPreviousBuyers,
-
-        // const contractState = await contract.state()
-        // setEscrowState(humanReadableEscrowState(contractState));
-        // const contractBalance = await provider.getBalance(contract.address);
-        // setEscrowBalance(ethers.utils.formatEther(contractBalance));
-        // const contractPrice = await contract.price()
-        // setEscrowPrice(ethers.utils.formatEther(contractPrice));
-        // const contractSales = await contract.totalSales();
-        // setEscrowSales(contractSales.toString());
-        // const contractPreviousBuyers = await contract.listPreviousBuyers();
-        // setEscrowPreviousBuyers(contractPreviousBuyers);
-        // console.log(contractPreviousBuyers);
 
         const contractSeller = await contract.seller();
         setSeller(contractSeller);
@@ -381,11 +330,7 @@ function App() {
       // console.log("signer");
       // console.log(signer);
 
-      const forClose = new ethers.Contract(escrowAddress, Escrow.abi, signer); // Should I make this all the time?
-
-      // contract.on("Aborted", () => {
-      //   alert("Aborted");
-      // })
+      const forClose = new ethers.Contract(escrowAddress, Escrow.abi, signer);
 
       const transaction = await forClose.close();
       await transaction.wait();
@@ -436,7 +381,24 @@ function App() {
     }
   }
 
-  async function refund() {
+  async function refundBuyer() {
+    if (!escrow.state || escrow.state !== "Locked") return
+
+    if (typeof window.ethereum !== 'undefined') {
+      await requestAccount()
+
+      const signer = provider.getSigner(); // Your current metamask account;
+
+      const forRefund = new ethers.Contract(escrowAddress, Escrow.abi, signer);
+      const transaction = await forRefund.refundBuyer();
+      await transaction.wait();
+
+      // call currentEscrowState here and it will show you inactive at the screen
+      // fetchGreeting()
+    }
+  }
+
+  async function refundSeller() {
     if (!escrow.state || escrow.state !== "Release") return
 
     if (typeof window.ethereum !== 'undefined') {
@@ -581,7 +543,9 @@ function App() {
 
             escrowState={escrow.state}
             close={close}
-            refund={refund}
+
+            refundBuyer={refundBuyer}
+            refundSeller={refundSeller}
 
             restart={restart}
             end={end}

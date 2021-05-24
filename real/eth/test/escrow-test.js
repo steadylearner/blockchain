@@ -14,6 +14,7 @@ describe("Escrow Events and State", function() {
 
   let closedEvent, 
       confirmPurchaseEvent, 
+      sellerRefundBuyerEvent,
       confirmReceivedEvent, 
       sellerRefundedEvent, 
       restartedEvent,
@@ -50,6 +51,20 @@ describe("Escrow Events and State", function() {
         resolve({
           when,
           by,
+        });
+      });
+
+      setTimeout(() => {
+        reject(new Error('timeout'));
+      }, 60000)
+    });
+
+    sellerRefundBuyerEvent = new Promise((resolve, reject) => {
+      escrow.on('SellerRefundBuyer', (when, event) => {
+        event.removeListener();
+
+        resolve({
+          when,
         });
       });
 
@@ -213,7 +228,7 @@ describe("Escrow Events and State", function() {
 
   // A visitor who first sees the contract to firstBuyer
 
-  it("Should set the contract state to 'Sale' to 'Locked' and refundSeller should fail.", async function () {
+  it("Should set the contract state to 'Sale' to 'Locked' and refundSeller should fail and refundBuyer should work.", async function () {
     expect(await escrow.seller()).to.equal(seller.address);
     expect(await escrow.state()).to.equal(0); // Sale
 
@@ -229,13 +244,22 @@ describe("Escrow Events and State", function() {
     let event = await confirmPurchaseEvent;
     console.log("ConfirmPurchase");
     console.log(humanReadableUnixTimestamp(event.when.toString()));
-    expect(await event.by).to.equal(firstBuyer.address);
+    expect(event.by).to.equal(firstBuyer.address);
 
     expect(await escrow.buyer()).to.equal(firstBuyer.address);
     expect(await escrow.state()).to.equal(1); // Locked
 
     // When "Locked", shouldn't allow this. Revert with the error message "revert Invalid state"
     await expectRevert(escrow.refundSeller(), "revert Invalid state");
+
+    await escrow.refundBuyer();
+
+    event = await sellerRefundBuyerEvent;
+    console.log("SellerRefundBuyer");
+    console.log(humanReadableUnixTimestamp(event.when.toString()));
+
+    expect(await escrow.state()).to.equal(0); // Sale
+    expect(await escrow.buyer()).to.equal("0x0000000000000000000000000000000000000000");
   });
 
   // Should make tests work from this.

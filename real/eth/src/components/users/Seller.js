@@ -9,7 +9,10 @@ const Seller = ({
     escrowState,
 
     close,
-    refund,
+
+    refundBuyer,
+    refundSeller,
+    
     restart,
     end,
 }) => {
@@ -43,8 +46,10 @@ const Seller = ({
             }}>
                 {escrowState === "Sale" && <Button style={fullWidth} onClick={close} color="secondary" variant="contained">I want to close this ad</Button>}
                 
-                {escrowState === "Locked" && <p>"Send the car to the client and wait for confirmation of your client before you receive the money."</p>}
-                {escrowState === "Release" && <Button style={fullWidth} onClick={refund} color="primary" variant="contained">I want to receive money from what I sold </Button>}
+                {escrowState === "Locked" && <p>"Send the car to the client and wait for confirmation of your client before you receive the money or refund the buyer"</p>}
+                {escrowState === "Locked" && <Button style={fullWidth} onClick={refundBuyer} color="secondary" variant="contained">I want to refund the buyer.</Button>}
+                
+                {escrowState === "Release" && <Button style={fullWidth} onClick={refundSeller} color="primary" variant="contained">I want to receive money from what I sold </Button>}
                 
                 {(escrowState === "Closed" || escrowState === "Complete") && <Button style={fullWidth} onClick={restart} color="primary" variant="contained">I want to sell a car again</Button>}
                 {(escrowState === "Closed" || escrowState === "Complete") && <Button style={{
