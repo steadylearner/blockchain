@@ -256,13 +256,15 @@ function App() {
 
           console.log("Event - Restarted");
           console.log(`State - ${humanReadableEscrowState(contractState)}`);
-          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
+          console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`);
         });
 
-        contract.on("End", async () => {
+        contract.on("End", async (_when, _event) => {
           // This doesn't work
           // event.removeListener();
 
+          // console.log("Event - End");
+          // console.log(`${moment(humanReadableUnixTimestamp(when)).fromNow()} - ${humanReadableUnixTimestamp(when)}`)
           setContractEnd(false);
         });
 
@@ -500,7 +502,10 @@ function App() {
         margin: "0 auto",
         display: "flex",
         flexFlow: "column",
-        alignItems: "center"
+        alignItems: "center",
+
+        background: "#efefef",
+        minHeight: "100vh",
       }}>
         <ContractDetails
           address={contract.address}
@@ -523,6 +528,8 @@ function App() {
           border: "1px solid black",
           borderRadius: "0.5rem",
           padding: "0.5rem 1rem 1rem 1rem",
+
+          background: "white",
         }} ><PreviousBuyers previousBuyers={escrow.previousBuyers} /></div>}
 
         {role && <div style={{
@@ -535,6 +542,8 @@ function App() {
           border: "1px solid black",
           borderRadius: "0.5rem",
           padding: "0.5rem 1rem 1rem 1rem",
+
+          background: "white",
         }} >
           {role === "seller" && <Seller
             address={seller}

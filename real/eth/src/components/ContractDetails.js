@@ -22,6 +22,8 @@ const ContractDetails = ({
             border: "1px solid black",
             borderRadius: "0.5rem",
             padding: "0.5rem 1rem 1rem 1rem",
+
+            background: "white",
         }}>
             <div style={{
                 display: "flex",

@@ -66,16 +66,16 @@ function Main () {
           </Grid.Row>
           <Grid.Row>
             <Transfer accountPair={accountPair} />
-            <Events />
-            {/* <Upgrade accountPair={accountPair} /> */}
+            {/* <Events /> */}
+            <Upgrade accountPair={accountPair} />
           </Grid.Row>
-          {/* <Grid.Row>
+          <Grid.Row>
             <Interactor accountPair={accountPair} />
             <Events />
           </Grid.Row>
           <Grid.Row>
             <TemplateModule accountPair={accountPair} />
-          </Grid.Row> */}
+          </Grid.Row>
         </Grid>
       </Container>
       <DeveloperConsole />
