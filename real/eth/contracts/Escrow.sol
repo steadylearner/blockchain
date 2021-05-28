@@ -1,4 +1,4 @@
-// Include event listner at frontend
+// What you can do with normal backend and a database 
 
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
@@ -13,6 +13,7 @@ pragma solidity >=0.7.0 <0.9.0;
 // $yarn start with metamask
 
 // Organize the project with frontend
+// Include fallback function?
 contract Escrow {
     uint public price;
     address payable public seller;
@@ -111,6 +112,11 @@ contract Escrow {
         uint256 when
     );
 
+    event Donation(
+        address by,
+        uint amount
+    );
+
     /// Ensure that `msg.value` is an even number.
     /// Division will truncate if it is an odd number.
     /// Check via multiplication that it wasn't an odd number.
@@ -133,6 +139,13 @@ contract Escrow {
     //     returns (State)
     // {
     //     return state;
+    // }
+
+    // https://www.toptal.com/ethereum-smart-contract/time-locked-wallet-truffle-tutorial
+    // Use this instead for frontend?
+    // uint public unlockDate;
+    // function contractDetails() public view returns(address, address, uint, uint, uint) {
+    //     return (creator, owner, unlockDate, createdAt, this.balance);
     // }
 
     /// Abort the purchase and reclaim the ether.
@@ -294,4 +307,15 @@ contract Escrow {
             
         }
     }
+
+    // https://docs.soliditylang.org/en/v0.6.2/contracts.html
+    // fallback() payable external { 
+        // emit Donation(
+        //     msg.sender, 
+        //     msg.value
+        // );
+
+        // https://docs.soliditylang.org/en/v0.6.8/control-structures.html#revert
+        // revert("We don't accept donation");
+    // }
 }
