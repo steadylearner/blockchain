@@ -1,10 +1,3 @@
-## TODO
-
-* Make ERC20token
-* Use IPFS with ERC721token
-
-## Escrow Blog
-
 In this post we will learn how to make a full stack dapp similar to the cover of this post. We will make a simple safe remote purchase escrow contract with Solidity. Then, write tests for them and build a frontend for it also.
 
 I referred [The complete guide to full stack ethereum development](https://dev.to/dabit3/the-complete-guide-to-full-stack-ethereum-development-3j13) to set up the development environment locally. 
@@ -24,20 +17,20 @@ The commands you will use to locally develop the dapp used here will be these in
 ```toml
 # See your Solidity code for the contract 
 # is ok and compile without any error or warning.
-compile="npx hardhat compile",
+compile="npx hardhat compile"
 # Write tests to see the smart contract code works 
 # as you expect for various situations.
-test="npx hardhat test",
+test="npx hardhat test"
 
 # Run local solidity development environment.
 # It will set up dummy accounts that you can use to test.
-serve="npx hardhat node",
+serve="npx hardhat node"
 # Upload your Solidity contract code to it 
 # before you run the frontend code.
-deploy="npx hardhat run scripts/deploy.js --network localhost",
+deploy="npx hardhat run scripts/deploy.js --network localhost"
 
 # Run your React frontend code.
-start="react-scripts start",
+start="react-scripts start"
 ```
 
 Save them at [package.json](https://github.com/steadylearner/blockchain/blob/main/real/eth/package.json) and use with `$yarn compile` etc or write a simple CLI if you want to save comments.

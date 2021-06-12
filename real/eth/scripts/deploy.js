@@ -23,8 +23,6 @@ async function main() {
   );
 
   const Escrow = await hre.ethers.getContractFactory("Escrow");
-
-  const SCAMToken = await hre.ethers.getContractFactory("SCAMToken");
   // const escrow = await Escrow.deploy(); // Should be here to set value?
   // 0.002 ETH, find a better way for this
 
@@ -34,10 +32,6 @@ async function main() {
   // const escrow = await Escrow.deploy({ value: "1 ETHEREUM" }); // Should be here to set value?
   // const escrow = await Escrow.deploy({ value: 2000000000000000 }); // Should be here to set value?
 
-  // const firstTokens = 1000000000;
-  // const scamToken = await SCAMToken.deploy(firstTokens);
-  const scamToken = await SCAMToken.deploy();
-
   // Contract deployment: Escrow
   // Contract address: 0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0
   // Transaction: 0xd8fab06dae0b41dda1d2b8a4f0b8883c5dfa1da3bab5ebbc72dec6c1251e9a00
@@ -45,15 +39,12 @@ async function main() {
   // Value: 2 wei
   // Gas used: 839357 of 839357
   // Block #5: 0xb6d70b5a3308639a4a3332d76aeaa113d20c3ea5136aae330171298fc5f03ef5
-
+  
   await escrow.deployed();
-  console.log("Escrow deployed to:", escrow.address);
-
-  await scamToken.deployed();
-  console.log("SCAMToken deployed to:", scamToken.address);
   // await greeter.deployed();
   // await token.deployed();
 
+  console.log("Escrow deployed to:", escrow.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

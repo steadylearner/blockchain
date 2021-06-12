@@ -108,7 +108,6 @@ interface EscrowInterface extends ethers.utils.Interface {
     "Closed(uint256)": EventFragment;
     "ConfirmPurchase(uint256,address)": EventFragment;
     "ConfirmReceived(uint256,address)": EventFragment;
-    "Donation(address,uint256)": EventFragment;
     "End(uint256)": EventFragment;
     "Restarted(uint256)": EventFragment;
     "SellerRefundBuyer(uint256)": EventFragment;
@@ -118,7 +117,6 @@ interface EscrowInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "Closed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ConfirmPurchase"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ConfirmReceived"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Donation"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "End"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Restarted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "SellerRefundBuyer"): EventFragment;
@@ -400,11 +398,6 @@ export class Escrow extends Contract {
       when: null,
       by: null
     ): TypedEventFilter<[BigNumber, string], { when: BigNumber; by: string }>;
-
-    Donation(
-      by: null,
-      amount: null
-    ): TypedEventFilter<[string, BigNumber], { by: string; amount: BigNumber }>;
 
     End(when: null): TypedEventFilter<[BigNumber], { when: BigNumber }>;
 

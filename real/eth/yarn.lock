@@ -5403,11 +5403,6 @@ cbor@^5.1.0:
     bignumber.js "^9.0.1"
     nofilter "^1.0.4"
 
-chai-bignumber@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/chai-bignumber/-/chai-bignumber-3.0.0.tgz#e90cf1f468355bbb11a9acd051222586cd2648a9"
-  integrity sha512-SubOtaSI2AILWTWe2j0c6i2yFT/f9J6UBjeVGDuwDiPLkF/U5+/eTWUE3sbCZ1KgcPF6UJsDVYbIxaYA097MQA==
-
 chai-bn@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/chai-bn/-/chai-bn-0.2.1.tgz#1dad95e24c3afcd8139ab0262e9bbefff8a30ab7"
@@ -13597,13 +13592,6 @@ punycode@^2.1.0, punycode@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
-
-python-bridge@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/python-bridge/-/python-bridge-1.1.0.tgz#ec7d6a5540af62ed322cb040c6e259421be74a5a"
-  integrity sha512-qjQ0QB8p9cn/XDeILQH0aP307hV58lrmv0Opjyub68Um7FHdF+ZXlTqyxNkKaXOFk2QSkScoPWwn7U9GGnrkeQ==
-  dependencies:
-    bluebird "^3.5.0"
 
 q@^1.1.2:
   version "1.5.1"

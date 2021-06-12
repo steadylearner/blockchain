@@ -44,13 +44,6 @@ module.exports = {
       // accounts: [`0x${your-private-key}`]
       // 
     },
-    // "binance": "npx hardhat run scripts/deploy.js --network binance",
-    // binance: {
-    //   url: "https://bsc-dataseed.binance.org/",
-    //   chainId: 56,
-    //   gasPrice: 20000000000,
-    //   accounts: ["0x5C09780933620765a1fb91C09Fd637103a74Ee2D"]
-    // }
     // rinkeby: {
     //   url: "https://rinkeby.infura.io/v3/projectid",
     //   accounts: [process.env.a2key]
