@@ -1,3 +1,5 @@
+<!-- Refer to this also https://github.com/huudy/dapp-react -->
+
 In this post we will learn how to make a full stack dapp similar to the cover of this post. We will make a simple safe remote purchase escrow contract with Solidity. Then, write tests for them and build a frontend for it also.
 
 I referred [The complete guide to full stack ethereum development](https://dev.to/dabit3/the-complete-guide-to-full-stack-ethereum-development-3j13) to set up the development environment locally. 
