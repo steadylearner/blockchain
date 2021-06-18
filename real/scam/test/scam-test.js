@@ -3,19 +3,15 @@
 const { expect } = require("chai");
 const { expectRevert } = require('@openzeppelin/test-helpers');
 
+// 1.
 const totalSupplyBigNumberHex = ethers.BigNumber.from("0x52b7d2dcc80cd2e4000000");
 const preMineBigNumberHex = ethers.BigNumber.from("0x108b2a2c28029094000000");
 const airDropSize = "1000000000000000000000000"; // "0xD3C21BCECCEDA1000000"
 
-// const zero = 0;
-
-// Find big number to hex function.
-// Include disapproval.
 describe("SCAMToken state and transactions", function () {
   let SCAMToken, scamToken, owner, firstComer, secondComer; // seller is owner
 
-  // We don't test events here because the previous post handled that
-
+  // 2.
   beforeEach(async () => {
     provider = ethers.getDefaultProvider();
 
@@ -81,6 +77,7 @@ describe("SCAMToken state and transactions", function () {
   });
 
   // The code is almost the same as above
+  // 5.
   it("Should test 'releaseBNB' and it shouldn't affect the balance of other users (not owners)", async function () {
     const amountForApproval = 1000000;
     await scamToken.approve(firstComer.address, amountForApproval);
@@ -119,17 +116,16 @@ describe("SCAMToken state and transactions", function () {
 // steadylearner@AirdeStylearner eth % python3
 // >>> hex(1000000000000000000000000)
 // '0xd3c21bcecceda1000000'
-//   >>> hex(1000000000000000000000000000000)
+// >>> hex(1000000000000000000000000000000)
 // '0xc9f2c9cd04674edea40000000'
-//     >>> hex(1000000000000000000000000000000000)
+// >>> hex(1000000000000000000000000000000000)
 // '0x314dc6448d9338c15b0a00000000'
-//   >>> hex(1000000000000000000000000)
+// >>> hex(1000000000000000000000000)
 // '0xd3c21bcecceda1000000'
-//   >>> 10 ** 26
+// >>> 10 ** 26
 // 100000000000000000000000000
-//   >>> hex(_)
+// >>> hex(_)
 // '0x52b7d2dcc80cd2e4000000'
-//   >>>
 
 // uint256 totalSupply = 10 ** (8 + 18);
 // uint256 preMine = 2 * (10 ** (7 + 18));
