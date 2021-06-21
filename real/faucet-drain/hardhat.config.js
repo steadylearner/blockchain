@@ -45,6 +45,6 @@ module.exports = {
       // 
     },
   },
-  solidity: "0.5.6",
+  solidity: "0.7.6",
 };
 

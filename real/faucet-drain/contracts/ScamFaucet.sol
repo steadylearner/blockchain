@@ -8,6 +8,7 @@
 pragma solidity =0.7.6;
 
 contract ScamFaucet {
+	using SafeMath for uint256;
 
     address public Owner;
     address public constant ScamToken = 0xdb78FcBb4f1693FDBf7a85E970946E4cE466E2A9;
@@ -16,11 +17,32 @@ contract ScamFaucet {
 	uint256 public constant maxAirdropSize = 200 * 10 ** decimals;
 	uint256 public airdropSize = 100 * 10 ** decimals;
 	
+	uint256 public totalBenefitorWallets;
+	mapping (address => bool) public benefitorWallets;
+
 	event NewOwner(address indexed oldOwner, address indexed newOwner);
 	event Airdrop(address indexed receiver, uint256 amount);
+
+	// https://ethereum.stackexchange.com/questions/15641/how-does-a-contract-find-out-if-another-address-is-a-contract/15642#15642
+	function isContract(address _addr) public view returns (bool result){
+		uint32 size;
+		assembly {
+			size := extcodesize(_addr)
+		}
+		return (size > 0);
+	}
+
+	// Should be modifier?
 	
-	using SafeMath for uint256;
-	
+	// _wallet shouldn't be a contract and filtered with alreadyReceivedScam
+    function saveBenefitorWallet(address _wallet) private {
+        benefitorWallets[_wallet]=true;
+    }
+
+    function alreadyReceivedScam(address _wallet) public view returns (bool){
+        return benefitorWallets[_wallet];
+    }
+
 	// Modifiers
     modifier onlyOwner 
 	{
@@ -69,6 +91,10 @@ contract ScamFaucet {
 	// Returns true if address has a $SCAM balance of 0
 	function canAddressReceive(address adr) public view returns(bool)
 	{
+		// Use modifier instead?
+		require(!isContract(adr), "disallow a contract to earn SCAM from the faucet");
+		require(!alreadyReceivedScam(adr), "allow an address to receive SCAM only once");
+
 	    if (BEP20(ScamToken).balanceOf(adr) == 0)
 	    {
 	        return true;
@@ -82,9 +108,13 @@ contract ScamFaucet {
 	// Perform airdrop to calling function
 	function airdrop() public 
     {
-        require(canAddressReceive(msg.sender));
+        require(canAddressReceive(msg.sender), "Fail to meet requirements to receive SCAM Free");
         
         BEP20(ScamToken).transfer(msg.sender, airdropSize);
+		
+		saveBenefitorWallet(msg.sender);
+		totalBenefitorWallets = totalBenefitorWallets.add(1);
+
         emit Airdrop(msg.sender, airdropSize);
     }	
 	

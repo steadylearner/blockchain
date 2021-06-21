@@ -2,7 +2,7 @@
  *Submitted for verification at BscScan.com on 2021-06-21
 */
 
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity =0.7.6;
 
 contract ScamDrain {
 
