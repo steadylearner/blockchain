@@ -6,7 +6,8 @@
 
 // SPDX-License-Identifier: MIT
 
-// Search this also Polyyeld.finance 
+
+// https://bscscan.com/address/0x516ffd7d1e0ca40b1879935b2de87cb20fc1124b#code
 
 pragma solidity >=0.6.0 <0.8.0;
 
@@ -981,3 +982,13 @@ contract BnbPricePrediction is Ownable, Pausable {
             block.number < rounds[epoch].lockBlock;
     }
 }
+
+// 1. Contract pay cost intead of user
+// https://ethereum.stackexchange.com/questions/144/can-contracts-pay-the-gas-instead-of-the-message-sender 
+// https://docs.openzeppelin.com/learn/sending-gasless-transactions
+
+// 2. https://jeancvllr.medium.com/solidity-tutorial-all-about-addresses-ffcdf7efc4e7
+
+// 3. Reward referrers with this
+// Polyyeld.finance
+// https://github.com/PolyYeld/Polyyeld-Contract/blob/main/Referral.sol 
