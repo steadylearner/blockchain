@@ -2,7 +2,7 @@
  *Submitted for verification at BscScan.com on 2021-05-01
 */
 
-pragma solidity >=0.4.22 <0.6.0;
+pragma solidity >=0.4.22 <=0.7.6; // <0.6 originally
 
 contract SCAM_Token {
 
@@ -86,8 +86,9 @@ contract SCAM_Token {
 		owner_.transfer(address(this).balance);
 	}
 	
-  // Fallback function
-	function() external payable {}
+  // Fallback function originally
+	// function() external payable {}
+  fallback() external payable {}
 }
 
 library SafeMath { 

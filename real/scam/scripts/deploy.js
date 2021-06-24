@@ -13,12 +13,40 @@ async function main() {
     deployer.address
   );
 
-  const SCAM = await hre.ethers.getContractFactory("SCAM_Token");
+  // Uncomment for each step.
 
-  const scam = await SCAM.deploy();
-  await scam.deployed();
+  // 1. Deploy SCAM
+  // const SCAM = await hre.ethers.getContractFactory("SCAM_Token");
 
-  console.log("SCAM_Token deployed to:", scam.address);
+  // const scam = await SCAM.deploy();
+  // await scam.deployed();
+
+  // console.log("SCAM_Token deployed to:", scam.address);
+
+  // 2. Deploy HackableContract
+  const HackableContract = await hre.ethers.getContractFactory("HackableContract");
+
+  const hackable_contract = await HackableContract.deploy();
+  await hackable_contract.deployed();
+
+  console.log("HackableContract deployed to:", hackable_contract.address);
+  // Use until this to see HackableContract can be deployed with SCAM locally.
+  // Move to test
+
+  // 3. Deposit with console?
+
+  // await hackable_contract.DepositScam(deployer.address, 25000);
+
+  // const addressRegsitered = await hackable_contract.addressRegsitered();
+  // console.log(addressRegsitered);
+
+  // 2. Deploy Hackable contract 
+  
+  // 3. Deposit it to 25000 $SCAM
+
+  // 3. Test Hackable Drain
+
+  // 4. Extract it
 }
 
 // We recommend this pattern to be able to use async/await everywhere

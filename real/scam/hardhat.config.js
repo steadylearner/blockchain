@@ -45,6 +45,7 @@ module.exports = {
       // 
     },
   },
-  solidity: "0.5.6",
+  // solidity: "0.5.6", // This to test SCAM
+  solidity: "0.7.6", // This to test HackableContract
 };
 
