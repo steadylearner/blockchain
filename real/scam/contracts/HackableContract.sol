@@ -4,29 +4,51 @@
 
 pragma solidity =0.7.6;
 
+// https://hardhat.org/tutorial/debugging-with-hardhat-network.html
+import "hardhat/console.sol";
+
 contract HackableContract {
     address public constant SCAM_TOKEN_ADDRESS = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
     // address public constant SCAM_TOKEN_ADDRESS = 0xdb78FcBb4f1693FDBf7a85E970946E4cE466E2A9;
         
-    uint8 public Count = 0;
+    uint8 public count = 0;
     mapping(address => bool) addressRegistered;
-	mapping(address => uint8) addressToId;
+	mapping(address => uint8) addressToId; // 0 to 255
 	mapping(uint8 => uint256) balances;
 
-    // To help test
+    // To help test to make async 
     event SomeoneDepositScam(
         uint256 when
     );
 
-	function DepositScam(address origin, uint256 amount) external
+    event WithdrawScam(
+        // uint256 when,
+        // address by,
+        uint256 amount
+    );
+
+    event SetCount(
+        uint256 when
+    );
+    // In the original code, there is no funciton similar to this.
+    // funciton to help test easy
+    function setCount(uint8 scam) external {
+        count = scam;
+        emit SetCount(
+            block.timestamp
+        );
+    }
+
+    // What is origin?
+	function depositScam(address origin, uint256 amount) external
 	{
 	    BEP20 scamToken = BEP20(SCAM_TOKEN_ADDRESS);
 	    
         // This was only called once by owner so it doesn't matter with if or not
 	    if (!addressRegistered[origin]) {
-	        Count++;
+	        count++;
 	        addressRegistered[origin] = true;
-	        addressToId[origin] = Count;
+	        addressToId[origin] = count;
 
             // It is already 0, no need for that
 	        // balances[Count] = 0; It was also a bug point.
@@ -45,19 +67,26 @@ contract HackableContract {
         );
 	}
 
-    function WithdrawScam(uint256 amount) external 
+    function withdrawScam(uint256 amount) external 
     {
         BEP20 scamToken = BEP20(SCAM_TOKEN_ADDRESS);
         
         // I need to take this with DepositScam part.
         uint8 id = addressToId[msg.sender];
         uint256 bal = balances[id];
+
+        console.log(id);
+        console.log(bal);
         
         // Target is here
         require(amount <= bal); 
         
         balances[id] -= amount;
         scamToken.transfer(msg.sender, amount);
+
+        emit WithdrawScam(
+            amount
+        );
     }
 
 }

@@ -986,6 +986,7 @@ contract BnbPricePrediction is Ownable, Pausable {
 // 1. Contract pay cost intead of user
 // https://ethereum.stackexchange.com/questions/144/can-contracts-pay-the-gas-instead-of-the-message-sender 
 // https://docs.openzeppelin.com/learn/sending-gasless-transactions
+// https://programtheblockchain.com/posts/2018/02/17/signing-and-verifying-messages-in-ethereum/
 
 // 2. https://jeancvllr.medium.com/solidity-tutorial-all-about-addresses-ffcdf7efc4e7
 
